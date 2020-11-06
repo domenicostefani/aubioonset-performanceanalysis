@@ -41,9 +41,9 @@ if [[ -z "$ONSET_THRESHOLD" ]]; then
     echo "using default value for ONSET_THRESHOLD"
     ONSET_THRESHOLD=0.75
 fi
-if [[ -z "$MINIMUM_INTER_ONSET_INTERVAL_MS_SECONDS" ]]; then
+if [[ -z "$MINIMUM_INTER_ONSET_INTERVAL_SECONDS" ]]; then
     echo "using default value for MINIMUM_INTER_ONSET_INTERVAL_MS_SECONDS"
-    MINIMUM_INTER_ONSET_INTERVAL_MS_SECONDS=0.020 # 20ms
+    MINIMUM_INTER_ONSET_INTERVAL_SECONDS=0.020 # 20ms
 fi
 
 
@@ -61,6 +61,6 @@ subdir="onsets_extracted/"
 mkdir -p $subdir
 
 # Extract onsets with the parameters chosen
-aubioonset $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_MS_SECONDS > $subdir$filename.txt
+aubioonset $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_SECONDS > $subdir$filename.txt
 
 ./utility_scripts/fixLabels.sh $subdir$filename.txt
