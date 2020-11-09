@@ -10,7 +10,7 @@ if(dir == "r_analysis"){
   print("Call from a project directory")
   exit()
 }
-onsets = read.csv(CSV_PATH)
+onsets = read.csv(CSV_PATH, na.strings = "NAN")
 
 
 total = length(onsets$difference)
