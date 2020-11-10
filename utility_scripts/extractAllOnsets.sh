@@ -10,6 +10,10 @@
 
 usage() { echo "Usage: $0 [-B <BUFFER_SIZE>] [-H <HOP_SIZE>] [-s <SILENCE_THRESHOLD>] [-t <ONSET_THRESHOLD> -O <ONSET_METHOD>] [-M <MINIMUM_INTER_ONSET_INTERVAL_SECONDS>]" 1>&2; exit 1; }
 
+LOGFILE="logs/extractAllOnsets.log"
+mkdir -p logs
+rm -f $LOGFILE
+
 while getopts “:B:H:s:t:O:M:” opt; do
   case $opt in
     B) BUFFER_SIZE=$OPTARG ;;
@@ -29,38 +33,37 @@ echo "ONSET_THRESHOLD=$ONSET_THRESHOLD"
 echo "ONSET_METHOD=$ONSET_METHOD"
 echo "MINIMUM_INTER_ONSET_INTERVAL_SECONDS=$MINIMUM_INTER_ONSET_INTERVAL_SECONDS"
 
-
 # Available methods:<default|energy|hfc|complex|phase|specdiff|kl|mkl|specflux>
 if [[ -z "$ONSET_METHOD" ]]; then
-    echo "using default value for ONSET_METHOD"
+    echo "using default value for ONSET_METHOD" >> $LOGFILE
     ONSET_METHOD=default
 fi
 
 if [[ -z "$BUFFER_SIZE" ]]; then
-    echo "using default value for BUFFER_SIZE"
+    echo "using default value for BUFFER_SIZE" >> $LOGFILE
     BUFFER_SIZE=256
 fi
 if [[ -z "$HOP_SIZE" ]]; then
-    echo "using default value for HOP_SIZE"
+    echo "using default value for HOP_SIZE" >> $LOGFILE
     HOP_SIZE=128
 fi
 if [[ -z "$SILENCE_THRESHOLD" ]]; then
-    echo "using default value for SILENCE_THRESHOLD"
+    echo "using default value for SILENCE_THRESHOLD" >> $LOGFILE
     SILENCE_THRESHOLD=-40.0
 fi
 if [[ -z "$ONSET_THRESHOLD" ]]; then
-    echo "using default value for ONSET_THRESHOLD"
+    echo "using default value for ONSET_THRESHOLD" >> $LOGFILE
     ONSET_THRESHOLD=0.75
 fi
 if [[ -z "$MINIMUM_INTER_ONSET_INTERVAL_SECONDS" ]]; then
-    echo "using default value for MINIMUM_INTER_ONSET_INTERVAL_MS_SECONDS"
+    echo "using default value for MINIMUM_INTER_ONSET_INTERVAL_MS_SECONDS" >> $LOGFILE
     MINIMUM_INTER_ONSET_INTERVAL_SECONDS=0.020 # 20ms
 fi
 
 
 # Call extractOnset for all waw files in the folder
 for audiofile in *.wav; do
-	source ./utility_scripts/extractOnset.sh $audiofile
+	source ./utility_scripts/extractOnset.sh $audiofile >> $LOGFILE
 done
 
 DELAY=$(python -c "print(int($HOP_SIZE*4.3))")
