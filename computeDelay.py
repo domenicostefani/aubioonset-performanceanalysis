@@ -34,6 +34,7 @@ from enum import Enum   # To specify parameter type
 MAX_ONSET_DIFFERENCE_S = 0.02
 print("Onset further apart than " + str(MAX_ONSET_DIFFERENCE_S*1000.0) + \
       "ms are considered different")
+IGNORE_NEG = False
 
 class ParamType(Enum):  # Aubioonset parameter type
     INT = 1
@@ -66,8 +67,8 @@ def readParam(param_name,default_value,param_type):
 print("Extracting all the onsets from the wav files in this folder")
 print("Specify the parameter values or press <ENTER> for default")
 BUFFER_SIZE = readParam("BUFFER_SIZE",256,ParamType.INT)
-HOP_SIZE = readParam("HOP_SIZE",128,ParamType.INT)
-SILENCE_THRESHOLD = readParam("SILENCE_THRESHOLD",-40.0,ParamType.FLOAT)
+HOP_SIZE = readParam("HOP_SIZE",64,ParamType.INT)
+SILENCE_THRESHOLD = readParam("SILENCE_THRESHOLD",-55.0,ParamType.FLOAT)
 ONSET_THRESHOLD = readParam("ONSET_THRESHOLD",0.75,ParamType.FLOAT)
 print("Available methods:<default|energy|hfc|complex|phase|specdiff|kl|mkl|specflux>")
 ONSET_METHOD = readParam("ONSET_METHOD","default",ParamType.STR)
@@ -85,7 +86,13 @@ opts = " -B " + str(BUFFER_SIZE) + \
 EXT_RES = os.popen("./utility_scripts/extractAllOnsets.sh " + opts).read()
 
 # Parse script output, looking for the AUBIOONSET delay (in samples)
-AUBIODELAY_SAMPLES = int(re.search('[0-9]+', EXT_RES).group(0))
+PARTIAL_STRING = re.search("To get the real detection time, add the delay of [0-9]+ samples",EXT_RES).group(0)
+print("!! READ: '" + PARTIAL_STRING + "'")
+
+AUBIODELAY_SAMPLES = int(re.search('[0-9]+', PARTIAL_STRING).group(0))
+
+# To get the real detection time, add the delay of 550 samples
+
 print("The delay introduced by aubioonset is " + str(AUBIODELAY_SAMPLES) + " samples")
 SAMPLE_RATE = 48000
 AUBIODELAY_S = AUBIODELAY_SAMPLES * 1.0 / SAMPLE_RATE
@@ -97,7 +104,7 @@ NAN_STR = "NAN" # NaN
 
 # Compare the onsets in @labels_file and @extracted_file, compute the delay and
 # write the result as a CSV to out_file
-def computeDifference(labels_file,extracted_file,out_file):
+def computeDifference(recording_name,labels_file,extracted_file,out_file):
     end_flag = False                     # termination flag
     lbl_line = labels_file.readline()    # read the very first line
     ext_line = extracted_file.readline() # read the very first line
@@ -111,15 +118,15 @@ def computeDifference(labels_file,extracted_file,out_file):
             # Compute the delay in seconds and sum AUBIOONSET delay
             diff = ext_value - lbl_value + AUBIODELAY_S
             # Skip values if onsets are different (delay greater than threshold)
-            if abs(diff) < MAX_ONSET_DIFFERENCE_S:
-                out_file.write(str(lbl_value) + SEP_STR + str(ext_value) + SEP_STR + str(diff) + "\n")
+            if abs(diff) < MAX_ONSET_DIFFERENCE_S and (not IGNORE_NEG or diff > 0):
+                out_file.write(str(lbl_value) + SEP_STR + str(ext_value) + SEP_STR + str(diff) + SEP_STR + recording_name + "\n")
                 lbl_line = labels_file.readline()
                 ext_line = extracted_file.readline()
             elif lbl_value < ext_value:
-                out_file.write(str(lbl_value) + SEP_STR + NAN_STR + SEP_STR + NAN_STR + "\n")
+                out_file.write(str(lbl_value) + SEP_STR + NAN_STR + SEP_STR + NAN_STR + SEP_STR + recording_name + "\n")
                 lbl_line = labels_file.readline()
             elif lbl_value > ext_value:
-                out_file.write(NAN_STR + SEP_STR + str(ext_value) + SEP_STR + NAN_STR + "\n")
+                out_file.write(NAN_STR + SEP_STR + str(ext_value) + SEP_STR + NAN_STR + SEP_STR + recording_name + "\n")
                 ext_line = extracted_file.readline()
 
 # Print info
@@ -129,15 +136,14 @@ onsets_labeled = glob.glob("onsets_labeled/*.txt")
 OUT_FILENAME="output/onset_delay.csv"
 output_csv = open(OUT_FILENAME, "w")
 # Write CSV header
-output_csv.write("onset_labeled" + SEP_STR + "onset_extracted" + SEP_STR + "difference\n")
+output_csv.write("onset_labeled" + SEP_STR + "onset_extracted" + SEP_STR + "difference" + SEP_STR + "recording\n")
 
 # Iterate over all label files and call computeDifference() for all files
 for filename in onsets_labeled:
-    print(filename)
     filename = os.path.basename(filename)
     file_labels = open("onsets_labeled/"+filename, "r")
     file_extrac = open("onsets_extracted/"+filename, "r")
-    computeDifference(file_labels,file_extrac,output_csv)
+    computeDifference(filename,file_labels,file_extrac,output_csv)
     file_labels.close()
     file_extrac.close()
 
