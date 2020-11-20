@@ -56,12 +56,13 @@ if [ "$#" -ne 1 ]; then
 fi
 
 fullfilename=$1	      # Use argument as input audio file
-filename="${1%.*}"    # Extract filename withoud extension
-subdir="onsets_extracted/"
-mkdir -p $subdir
+filename="${1%.*}"    # Extract filename without extension
+filename="${filename#*/}" #remove basename
+ONSET_OUT_DIR="onsets_extracted/"
+mkdir -p $ONSET_OUT_DIR
 
 # Extract onsets with the parameters chosen
-echo "Calling 'aubioonset $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_SECONDS > $subdir$filename.txt'"
-aubioonset $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_SECONDS > $subdir$filename.txt
+echo "Calling 'aubioonset $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_SECONDS > $ONSET_OUT_DIR$filename.txt'"
+aubioonset $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_SECONDS > $ONSET_OUT_DIR$filename.txt
 
-./utility_scripts/fixLabels.sh $subdir$filename.txt
+./utility_scripts/fixLabels.sh $ONSET_OUT_DIR$filename.txt

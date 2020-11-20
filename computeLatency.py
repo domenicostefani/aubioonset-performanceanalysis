@@ -34,7 +34,7 @@ from enum import Enum   # To specify parameter type
 MAX_ONSET_DIFFERENCE_S = 0.02
 print("Onset further apart than " + str(MAX_ONSET_DIFFERENCE_S*1000.0) + \
       "ms are considered different")
-IGNORE_NEG = False
+IGNORE_NEG = True
 
 class ParamType(Enum):  # Aubioonset parameter type
     INT = 1
@@ -68,7 +68,7 @@ print("Extracting all the onsets from the wav files in this folder")
 print("Specify the parameter values or press <ENTER> for default")
 BUFFER_SIZE = readParam("BUFFER_SIZE",256,ParamType.INT)
 HOP_SIZE = readParam("HOP_SIZE",64,ParamType.INT)
-SILENCE_THRESHOLD = readParam("SILENCE_THRESHOLD",-55.0,ParamType.FLOAT)
+SILENCE_THRESHOLD = readParam("SILENCE_THRESHOLD",-48.0,ParamType.FLOAT)
 ONSET_THRESHOLD = readParam("ONSET_THRESHOLD",0.75,ParamType.FLOAT)
 print("Available methods:<default|energy|hfc|complex|phase|specdiff|kl|mkl|specflux>")
 ONSET_METHOD = readParam("ONSET_METHOD","default",ParamType.STR)

@@ -8,13 +8,13 @@
 #          - domenico.stefani96[at]gmail.com
 # Date:   05/11/2020
 
-usage() { echo "Usage: $0 [-B <BUFFER_SIZE>] [-H <HOP_SIZE>] [-s <SILENCE_THRESHOLD>] [-t <ONSET_THRESHOLD> -O <ONSET_METHOD>] [-M <MINIMUM_INTER_ONSET_INTERVAL_SECONDS>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-B <BUFFER_SIZE>] [-H <HOP_SIZE>] [-s <SILENCE_THRESHOLD>] [-t <ONSET_THRESHOLD> -O <ONSET_METHOD>] [-M <MINIMUM_INTER_ONSET_INTERVAL_SECONDS>] [-dir <FILE_DIRECTORY>]" 1>&2; exit 1; }
 
 LOGFILE="logs/extractAllOnsets.log"
 mkdir -p logs
 rm -f $LOGFILE
 
-while getopts “:B:H:s:t:O:M:” opt; do
+while getopts “:B:H:s:t:O:M:d:” opt; do
   case $opt in
     B) BUFFER_SIZE=$OPTARG ;;
     H) HOP_SIZE=$OPTARG ;;
@@ -22,9 +22,12 @@ while getopts “:B:H:s:t:O:M:” opt; do
     t) ONSET_THRESHOLD=$OPTARG ;;
     O) ONSET_METHOD=$OPTARG ;;
     M) MINIMUM_INTER_ONSET_INTERVAL_SECONDS=$OPTARG ;;
+    d) FILEDIR=$OPTARG ;;
     *) usage ;;
   esac
 done
+
+echo "DIRECTORY=$FILEDIR"
 
 echo "BUFFER_SIZE=$BUFFER_SIZE"
 echo "HOP_SIZE=$HOP_SIZE"
@@ -62,7 +65,9 @@ fi
 
 
 # Call extractOnset for all waw files in the folder
-for audiofile in *.wav; do
+FILEEXT="*.wav"
+FILEPATTERN="$FILEDIR$FILEEXT"
+for audiofile in $FILEPATTERN; do
 	source ./utility_scripts/extractOnset.sh $audiofile >> $LOGFILE
 done
 
