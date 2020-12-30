@@ -4,7 +4,7 @@ dir = (tail(unlist(strsplit(getwd(),"/")),1))
 CSV_PATH=""
 if(dir == "r_analysis"){
   CSV_PATH = "../../output/onset_delay.csv"
-}else if(dir == "Aubio Analysis"){
+}else if(dir == "src"){
   CSV_PATH = "output/onset_delay.csv"
 }else{
   print("Call from a project directory")

@@ -80,7 +80,8 @@ opts = " -B " + str(BUFFER_SIZE) + \
        " -s " + str(SILENCE_THRESHOLD) + \
        " -t " + str(ONSET_THRESHOLD) + \
        " -O " + str(ONSET_METHOD) + \
-       " -M " + str(MINIMUM_INTER_ONSET_INTERVAL_SECONDS) + ""
+       " -M " + str(MINIMUM_INTER_ONSET_INTERVAL_SECONDS) + \
+       " -d " + "audiofiles/" + ""
 
 # Call onset extraction routine
 EXT_RES = os.popen("./utility_scripts/extractAllOnsets.sh " + opts).read()
