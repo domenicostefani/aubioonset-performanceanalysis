@@ -26,6 +26,19 @@ import glob             # To read folder filelist
 import os               # To call scripts
 import re               # Regexp, to parse script results
 from enum import Enum   # To specify parameter type
+import sys
+
+DEF_BUFFERSIZE = -1 
+DEF_METHOD = ""
+if len(sys.argv) == 2:
+    DEF_METHOD = sys.argv[1]
+elif len(sys.argv) == 3:
+    DEF_METHOD = sys.argv[1]
+    DEF_BUFFERSIZE = sys.argv[2]
+elif len(sys.argv) > 3:
+    print("Too many arguments")
+    exit(-1)
+
 
 # *Main comparation hyperparameter*
 # This states the maximum time delay between labeled and detected onset
@@ -66,13 +79,19 @@ def readParam(param_name,default_value,param_type):
 # Read all the parameters
 print("Extracting all the onsets from the wav files in this folder")
 print("Specify the parameter values or press <ENTER> for default")
-BUFFER_SIZE = readParam("BUFFER_SIZE",256,ParamType.INT)
-HOP_SIZE = readParam("HOP_SIZE",64,ParamType.INT)
+if DEF_BUFFERSIZE == -1:
+    BUFFER_SIZE = readParam("BUFFER_SIZE",64,ParamType.INT)
+else:
+    BUFFER_SIZE = DEF_BUFFERSIZE
+HOP_SIZE = 64#readParam("HOP_SIZE",64,ParamType.INT)
 SILENCE_THRESHOLD = readParam("SILENCE_THRESHOLD",-48.0,ParamType.FLOAT)
 ONSET_THRESHOLD = readParam("ONSET_THRESHOLD",0.75,ParamType.FLOAT)
-print("Available methods:<default|energy|hfc|complex|phase|specdiff|kl|mkl|specflux>")
-ONSET_METHOD = readParam("ONSET_METHOD","default",ParamType.STR)
-MINIMUM_INTER_ONSET_INTERVAL_SECONDS = readParam("MINIMUM_INTER_ONSET_INTERVAL_SECONDS",0.020,ParamType.FLOAT)
+if DEF_METHOD == "":
+    print("Available methods:<default|energy|hfc|complex|phase|specdiff|kl|mkl|specflux>")
+    ONSET_METHOD = readParam("ONSET_METHOD",DEF_METHOD,ParamType.STR)
+else:
+    ONSET_METHOD = DEF_METHOD
+MINIMUM_INTER_ONSET_INTERVAL_SECONDS = 0.020 #readParam("MINIMUM_INTER_ONSET_INTERVAL_SECONDS",0.020,ParamType.FLOAT)
 
 # Create the option string with the parameter values specified
 opts = " -B " + str(BUFFER_SIZE) + \
@@ -154,4 +173,85 @@ print("Output can be found at " + OUT_FILENAME)
 
 # Call analysis script
 print("Calling R analysis script")
-os.system("Rscript utility_scripts/r_analysis/analize_delays.r")
+logres_dir = "./results"
+logres_filename = logres_dir+"/res_"+\
+                  ONSET_METHOD+"_"+\
+                  str(BUFFER_SIZE)+"_"+\
+                  str(HOP_SIZE)+"_"+\
+                  str(SILENCE_THRESHOLD)+"_"+\
+                  str(ONSET_THRESHOLD)+"_"+\
+                  str(MINIMUM_INTER_ONSET_INTERVAL_SECONDS)+".log"
+
+os.system("mkdir -p "+logres_dir)
+os.system("Rscript utility_scripts/r_analysis/analize_delays.r > "+logres_filename)
+
+glob_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
+for metric in glob_metrics.keys():
+    glob_metrics[metric] = float(os.popen("cat " + logres_filename + '| grep -P \"\\\"'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
+
+macroavg_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
+for metric in macroavg_metrics.keys():
+    macroavg_metrics[metric] = float(os.popen("cat " + logres_filename + '| grep -P \"\\\"avg\_'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
+
+macroavg_tech_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
+for metric in macroavg_tech_metrics.keys():
+    macroavg_tech_metrics[metric] = float(os.popen("cat " + logres_filename + '| grep -P \"\\\"avg\_tech\_'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
+
+intensity_metrics = dict.fromkeys(["piano","mezzoforte","forte"])
+for intensity in intensity_metrics.keys():
+    intensity_metrics[intensity] = dict.fromkeys(["accuracy","precision","recall"])
+    for metric in intensity_metrics[intensity].keys():
+        intensity_metrics[intensity][metric] = float(os.popen("cat " + logres_filename + '| grep -P \"^'+intensity+"  "+metric+' [0-9]\.[0-9]+"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
+
+# Delay
+adj_min = float(os.popen("cat " + logres_filename + '| grep -P -o \"\\[ [0-9]+\\.[0-9]+\"| grep -P -o \"[0-9]+\\.[0-9]+\"').read())
+adj_max = float(os.popen("cat " + logres_filename + '| grep -P -o \", [0-9]+\\.[0-9]+ \\]ms\"| grep -P -o \"[0-9]+\\.[0-9]+\"').read())
+avg = float(os.popen("cat " + logres_filename +     '| grep -P -o \"avg_delay:  \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+perc = float(os.popen("cat " + logres_filename +    '| grep -P -o \"[0-9]\\.[0-9]+  of the corr\"| grep -P -o \"[0-9]\\.[0-9]+\"').read())
+
+output_string = ""
+output_string += ONSET_METHOD+"\t"
+output_string += str(BUFFER_SIZE)+"\t"
+output_string += str(HOP_SIZE)+"\t"
+output_string += str(MINIMUM_INTER_ONSET_INTERVAL_SECONDS)+"\t"
+output_string += str(SILENCE_THRESHOLD)+"\t"
+output_string += str(ONSET_THRESHOLD)+"\t \t"
+output_string += "{:.4f}".format(glob_metrics["accuracy"])+"\t"
+output_string += "{:.4f}".format(glob_metrics["precision"])+"\t"
+output_string += "{:.4f}".format(glob_metrics["recall"])+"\t"
+output_string += "{:.4f}".format(glob_metrics["f1-score"])+"\t"
+output_string += " \t"
+output_string += "{:.4f}".format(macroavg_metrics["accuracy"])+"\t"
+output_string += "{:.4f}".format(macroavg_metrics["precision"])+"\t"
+output_string += "{:.4f}".format(macroavg_metrics["recall"])+"\t"
+output_string += "{:.4f}".format(macroavg_metrics["f1-score"])+"\t"
+output_string += " \t"
+output_string += "{:.4f}".format(macroavg_tech_metrics["accuracy"])+"\t"
+output_string += "{:.4f}".format(macroavg_tech_metrics["precision"])+"\t"
+output_string += "{:.4f}".format(macroavg_tech_metrics["recall"])+"\t"
+output_string += "{:.4f}".format(macroavg_tech_metrics["f1-score"])+"\t"
+
+output_string += " \t"
+for intensity in intensity_metrics.keys():
+    for metric in intensity_metrics[intensity].keys():
+        output_string += "{:.4f}".format(intensity_metrics[intensity][metric])+"\t"
+    output_string += "\t"
+
+
+
+output_string += "{:.4f}".format(adj_min)+"\t"
+output_string += "{:.4f}".format(avg)+"\t"
+output_string += "{:.4f}".format(adj_max)+"\t"
+output_string += "{:.4f}".format(perc)+"\t"
+output_string += " \t"+logres_filename
+print(output_string)
+
+import pyperclip
+pyperclip.copy(output_string)
+spam = pyperclip.paste()
+
+
+# Move plots to results folder
+plots_suffix = logres_filename[:-4] + "_"
+os.system("mv ./delay.pdf "+plots_suffix+"delay.pdf") 
+os.system("mv ./metrics.pdf "+plots_suffix+"metrics.pdf") 
