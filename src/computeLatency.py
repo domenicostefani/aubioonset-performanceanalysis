@@ -28,14 +28,25 @@ import re               # Regexp, to parse script results
 from enum import Enum   # To specify parameter type
 import sys
 
-DEF_BUFFERSIZE = -1 
-DEF_METHOD = ""
+READ_BUFFERSIZE = -1
+READ_METHOD = ""
+READ_SILENCE = ""
+READ_THRESH = ""
 if len(sys.argv) == 2:
-    DEF_METHOD = sys.argv[1]
+    READ_METHOD = sys.argv[1]
 elif len(sys.argv) == 3:
-    DEF_METHOD = sys.argv[1]
-    DEF_BUFFERSIZE = sys.argv[2]
-elif len(sys.argv) > 3:
+    READ_METHOD = sys.argv[1]
+    READ_BUFFERSIZE = sys.argv[2]
+elif len(sys.argv) == 4:
+    READ_METHOD = sys.argv[1]
+    READ_BUFFERSIZE = sys.argv[2]
+    READ_SILENCE = sys.argv[3]
+elif len(sys.argv) == 5:
+    READ_METHOD = sys.argv[1]
+    READ_BUFFERSIZE = sys.argv[2]
+    READ_SILENCE = sys.argv[3]
+    READ_THRESH = sys.argv[4]
+elif len(sys.argv) > 5:
     print("Too many arguments")
     exit(-1)
 
@@ -79,18 +90,24 @@ def readParam(param_name,default_value,param_type):
 # Read all the parameters
 print("Extracting all the onsets from the wav files in this folder")
 print("Specify the parameter values or press <ENTER> for default")
-if DEF_BUFFERSIZE == -1:
+if READ_BUFFERSIZE == -1:
     BUFFER_SIZE = readParam("BUFFER_SIZE",64,ParamType.INT)
 else:
-    BUFFER_SIZE = DEF_BUFFERSIZE
+    BUFFER_SIZE = READ_BUFFERSIZE
 HOP_SIZE = 64#readParam("HOP_SIZE",64,ParamType.INT)
-SILENCE_THRESHOLD = readParam("SILENCE_THRESHOLD",-48.0,ParamType.FLOAT)
-ONSET_THRESHOLD = readParam("ONSET_THRESHOLD",0.75,ParamType.FLOAT)
-if DEF_METHOD == "":
-    print("Available methods:<default|energy|hfc|complex|phase|specdiff|kl|mkl|specflux>")
-    ONSET_METHOD = readParam("ONSET_METHOD",DEF_METHOD,ParamType.STR)
+if READ_SILENCE == "":
+    SILENCE_THRESHOLD = readParam("SILENCE_THRESHOLD",-48.0,ParamType.FLOAT)
 else:
-    ONSET_METHOD = DEF_METHOD
+    SILENCE_THRESHOLD = READ_SILENCE
+if READ_THRESH == "":
+    ONSET_THRESHOLD = readParam("ONSET_THRESHOLD",0.75,ParamType.FLOAT)
+else:
+    ONSET_THRESHOLD = READ_THRESH
+if READ_METHOD == "":
+    print("Available methods:<default|energy|hfc|complex|phase|specdiff|kl|mkl|specflux>")
+    ONSET_METHOD = readParam("ONSET_METHOD","hfc",ParamType.STR)
+else:
+    ONSET_METHOD = READ_METHOD
 MINIMUM_INTER_ONSET_INTERVAL_SECONDS = 0.020 #readParam("MINIMUM_INTER_ONSET_INTERVAL_SECONDS",0.020,ParamType.FLOAT)
 
 # Create the option string with the parameter values specified
@@ -206,8 +223,16 @@ for intensity in intensity_metrics.keys():
 # Delay
 adj_min = float(os.popen("cat " + logres_filename + '| grep -P -o \"\\[ [0-9]+\\.[0-9]+\"| grep -P -o \"[0-9]+\\.[0-9]+\"').read())
 adj_max = float(os.popen("cat " + logres_filename + '| grep -P -o \", [0-9]+\\.[0-9]+ \\]ms\"| grep -P -o \"[0-9]+\\.[0-9]+\"').read())
-avg = float(os.popen("cat " + logres_filename +     '| grep -P -o \"avg_delay:  \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+avg = float(os.popen("cat " + logres_filename +     '| grep -P -o \"avg_delay_glob:  \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
 perc = float(os.popen("cat " + logres_filename +    '| grep -P -o \"[0-9]\\.[0-9]+  of the corr\"| grep -P -o \"[0-9]\\.[0-9]+\"').read())
+
+mavg_t_mean = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_delay_mean: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+mavg_t_IQR = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_delay_iqr: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+mavg_t_var = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_delay_var: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+mavg_t_SD = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_delay_sd: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+mavg_t_lofence = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_lowfence: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+mavg_t_hifence = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_highfence: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+mavg_t_percIn = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_inrangeperc: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
 
 output_string = ""
 output_string += ONSET_METHOD+"\t"
@@ -243,6 +268,15 @@ output_string += "{:.4f}".format(adj_min)+"\t"
 output_string += "{:.4f}".format(avg)+"\t"
 output_string += "{:.4f}".format(adj_max)+"\t"
 output_string += "{:.4f}".format(perc)+"\t"
+
+output_string += "{:.4f}".format(mavg_t_mean)+"\t"
+output_string += "{:.4f}".format(mavg_t_IQR)+"\t"
+output_string += "{:.4f}".format(mavg_t_var)+"\t"
+output_string += "{:.4f}".format(mavg_t_SD)+"\t"
+output_string += "{:.4f}".format(mavg_t_lofence)+"\t"
+output_string += "{:.4f}".format(mavg_t_hifence)+"\t"
+output_string += "{:.4f}".format(mavg_t_percIn)+"\t"
+
 output_string += " \t"+logres_filename
 print(output_string)
 
@@ -253,5 +287,5 @@ spam = pyperclip.paste()
 
 # Move plots to results folder
 plots_suffix = logres_filename[:-4] + "_"
-os.system("mv ./delay.pdf "+plots_suffix+"delay.pdf") 
-os.system("mv ./metrics.pdf "+plots_suffix+"metrics.pdf") 
+os.system("mv ./delay.pdf "+plots_suffix+"delay.pdf")
+os.system("mv ./metrics.pdf "+plots_suffix+"metrics.pdf")
