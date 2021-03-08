@@ -45,6 +45,12 @@ if [[ -z "$MINIMUM_INTER_ONSET_INTERVAL_SECONDS" ]]; then
     echo "using default value for MINIMUM_INTER_ONSET_INTERVAL_MS_SECONDS"
     MINIMUM_INTER_ONSET_INTERVAL_SECONDS=0.020 # 20ms
 fi
+if [[ -z "$AUBIOONSET_COMMAND" ]]; then
+    echo "using default value for AUBIOONSET_COMMAND"
+    AUBIOONSET_COMMAND="aubioonset"
+fi
+
+
 
 
 
@@ -62,7 +68,9 @@ ONSET_OUT_DIR="onsets_extracted/"
 mkdir -p $ONSET_OUT_DIR
 
 # Extract onsets with the parameters chosen
-echo "Calling 'aubioonset $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_SECONDS > $ONSET_OUT_DIR$filename.txt'"
-aubioonset $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_SECONDS > $ONSET_OUT_DIR$filename.txt
+echo "Calling '$AUBIOONSET_COMMAND $fullfilename -B $BUFFER_SIZE -H $HOP_SIZE -s $SILENCE_THRESHOLD -t $ONSET_THRESHOLD -O $ONSET_METHOD -M $MINIMUM_INTER_ONSET_INTERVAL_SECONDS > $ONSET_OUT_DIR$filename.txt'"
+outfile="$ONSET_OUT_DIR$filename.txt"
+touch $outfile
+"$AUBIOONSET_COMMAND" "$fullfilename" -B "$BUFFER_SIZE" -H "$HOP_SIZE" -s "$SILENCE_THRESHOLD" -t "$ONSET_THRESHOLD" -O "$ONSET_METHOD" -M "$MINIMUM_INTER_ONSET_INTERVAL_SECONDS" > "$outfile"
 
 ./utility_scripts/fixLabels.sh $ONSET_OUT_DIR$filename.txt

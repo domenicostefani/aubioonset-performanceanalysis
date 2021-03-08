@@ -1,0 +1,13 @@
+\begin{table}
+\centering
+\caption{Pareto front solution with f1-score (macro average over all techniques) as the first objective and Interquartile Range of latency as the second.}
+\label{%TODO: add label}
+\begin{tabular}{llrrrrr}
+\toprule
+ \# &                         Method &  F1-score &  Low Tukey fence (ms) &  Delay mean (ms) &  High Tukey fence (ms) &  Onsets inside fences (\%) \\
+\midrule
+ a &  mkl (No whitening, noisegate) &    0.9580 &                4.1551 &           5.9223 &                 7.6484 &                     95.25 \\
+ b &             mkl (No whitening) &    0.9764 &                4.1744 &           6.0215 &                 7.7192 &                     95.70 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,14 @@
+\begin{table}[htbp]
+\begin{tabular}{lc|cccccc|}
+\cline{3-8}
+ & & \multicolumn{6}{c|}{Buffer size}  \\ \cline{3-8} 
+ & & \multicolumn{1}{c|}{64} & \multicolumn{1}{c|}{128} & \multicolumn{1}{c|}{256} & \multicolumn{1}{c|}{512} & \multicolumn{1}{c|}{1024} & \multicolumn{1}{c|}{2048}  \\ \hline
+\multicolumn{1}{|l|}{\multirow{5}{*}{\rotatebox[origin=c]{90}{Method}}} &	mkl	 &	 0.8482 &	 0.8522 &	 0.8718 &	 0.8661 &	 0.8690 &	 0.8706 \\ \cline{2-2}
+\multicolumn{1}{|l|}{} &	mkl (whitening, noisegate)	 &	 0.8815 &	 0.8819 &	 0.8831 &	 0.8771 &	 0.8715 &	 / \\ \cline{2-2}
+\multicolumn{1}{|l|}{} &	mkl (No whitening, noisegate)	 &	 0.9376 &	 0.9525 &	 \textbf{0.9580} &	 0.9484 &	 0.9557 &	 0.9324 \\ \cline{2-2}
+\multicolumn{1}{|l|}{} &	mkl (No whitening)	 &	 0.9511 &	 0.9702 &	 \textbf{0.9764} &	 0.9731 &	 0.9732 &	 0.9613 \\ \cline{2-2}
+\multicolumn{1}{|l|}{} &	mkl (No whitening, highpass)	 &	 0.9483 &	 0.9638 &	 0.9658 &	 0.9569 &	 0.9491 &	 0.9421 \\ \hline
+\end{tabular}
+\caption{} % TODO: insert caption
+\label{} % TODO: insert label
+\end{table}
