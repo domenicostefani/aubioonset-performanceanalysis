@@ -28,6 +28,19 @@ import re               # Regexp, to parse script results
 from enum import Enum   # To specify parameter type
 import sys
 
+# AUDIO_DIRECTORY = "compressed-audiofiles-soft-00"
+# AUDIO_DIRECTORY = "compressed-audiofiles-hard-02"
+# AUDIO_DIRECTORY = "gated-audiofiles-01"
+# AUDIO_DIRECTORY = "highpass-audiofiles-sum-2000-02"
+AUDIO_DIRECTORY = "audiofiles"
+
+# AUBIOONSET_COMMAND = "/home/cimil-01/Desktop/aubioonset-performanceanalysis/src/customAubio/aubioonset-mkl-nowhitening"
+AUBIOONSET_COMMAND = "aubioonset"
+
+print("\nAudio from folder \""+AUDIO_DIRECTORY+"\"\n")
+print("Aubio command: \""+AUBIOONSET_COMMAND+"\"\n")
+os.system("rm onsets_extracted/*.txt")
+
 READ_BUFFERSIZE = -1
 READ_METHOD = ""
 READ_SILENCE = ""
@@ -69,7 +82,7 @@ class ParamType(Enum):  # Aubioonset parameter type
 def readParam(param_name,default_value,param_type):
     try:
         param_str = input(param_name+"(default: " + str(default_value) + "): ")
-        if param_str is not "":
+        if param_str != "":
             if param_type is ParamType.INT:
                 param_val = int(param_str)
             elif param_type is ParamType.FLOAT:
@@ -111,16 +124,22 @@ else:
 MINIMUM_INTER_ONSET_INTERVAL_SECONDS = 0.020 #readParam("MINIMUM_INTER_ONSET_INTERVAL_SECONDS",0.020,ParamType.FLOAT)
 
 # Create the option string with the parameter values specified
-opts = " -B " + str(BUFFER_SIZE) + \
+opts = " -C " + str(AUBIOONSET_COMMAND) + \
+       " -B " + str(BUFFER_SIZE) + \
        " -H " + str(HOP_SIZE) + \
        " -s " + str(SILENCE_THRESHOLD) + \
        " -t " + str(ONSET_THRESHOLD) + \
        " -O " + str(ONSET_METHOD) + \
        " -M " + str(MINIMUM_INTER_ONSET_INTERVAL_SECONDS) + \
-       " -d " + "audiofiles/" + ""
+       " -d " + AUDIO_DIRECTORY + "/" + ""
 
 # Call onset extraction routine
-EXT_RES = os.popen("./utility_scripts/extractAllOnsets.sh " + opts).read()
+COMMAND = "./utility_scripts/extractAllOnsets.sh " + opts
+print("Calling "+COMMAND)
+EXT_RES = os.popen(COMMAND).read()
+
+if re.search("line",EXT_RES) != None:
+    print("Error in extractOnset.sh: " + str(re.search("extractOnset.sh: line",EXT_RES).group(0)))
 
 # Parse script output, looking for the AUBIOONSET delay (in samples)
 PARTIAL_STRING = re.search("To get the real detection time, add the delay of [0-9]+ samples",EXT_RES).group(0)
@@ -146,12 +165,12 @@ def computeDifference(recording_name,labels_file,extracted_file,out_file):
     lbl_line = labels_file.readline()    # read the very first line
     ext_line = extracted_file.readline() # read the very first line
     while not end_flag:
-        if lbl_line is "" and ext_line is "": # Terminate when both are EOF
+        if lbl_line == "" and ext_line == "": # Terminate when both are EOF
             end_flag = True
         else:
             # Convert to float or set to infinity if EOF
-            lbl_value = float(lbl_line.split()[0] if (lbl_line is not "") else "inf")
-            ext_value = float(ext_line.split()[0] if (ext_line is not "") else "inf")
+            lbl_value = float(lbl_line.split()[0] if (lbl_line != "") else "inf")
+            ext_value = float(ext_line.split()[0] if (ext_line !="") else "inf")
             # Compute the delay in seconds and sum AUBIOONSET delay
             diff = ext_value - lbl_value + AUBIODELAY_S
             # Skip values if onsets are different (delay greater than threshold)
@@ -165,12 +184,30 @@ def computeDifference(recording_name,labels_file,extracted_file,out_file):
             elif lbl_value > ext_value:
                 out_file.write(NAN_STR + SEP_STR + str(ext_value) + SEP_STR + NAN_STR + SEP_STR + recording_name + "\n")
                 ext_line = extracted_file.readline()
+# This functions uses pattern search to find a file with a similar name to the one specified.
+# For similar I mean a file in the same folder, with the same extension,
+# beginning with the same name but (potentially) with more characters after the
+# original name. Example:
+# filename = "somefolder/somefilename.txt"
+# found    = "somefolder/somefilename_secondversion.txt"
+# "found" IS CONSIDERED A SIMILAR FILENAME
+def find_similar_file(filename):
+    filenameonly = filename[:-4]
+    extonly = filename[-4:]
+    searchpattern = filenameonly + "*" + extonly
+    filesfound = glob.glob(searchpattern)
+    # Terminate if NO file found, or more than one found
+    if len(filesfound) != 1:
+        raise Exception("Found "+str(len(filesfound))+" similar files instead of 1 (\""+filename+"\")")
+    return filesfound[0]
 
 # Print info
 print("Computing the delays for:")
 onsets_labeled = glob.glob("onsets_labeled/*.txt")
 # Open output file
-OUT_FILENAME="output/onset_delay.csv"
+OUT_DIR = "output/"
+os.system("mkdir -p "+OUT_DIR)
+OUT_FILENAME=OUT_DIR+"onset_delay.csv"
 output_csv = open(OUT_FILENAME, "w")
 # Write CSV header
 output_csv.write("onset_labeled" + SEP_STR + "onset_extracted" + SEP_STR + "difference" + SEP_STR + "recording\n")
@@ -179,7 +216,7 @@ output_csv.write("onset_labeled" + SEP_STR + "onset_extracted" + SEP_STR + "diff
 for filename in onsets_labeled:
     filename = os.path.basename(filename)
     file_labels = open("onsets_labeled/"+filename, "r")
-    file_extrac = open("onsets_extracted/"+filename, "r")
+    file_extrac = open(find_similar_file("onsets_extracted/"+filename), "r")
     computeDifference(filename,file_labels,file_extrac,output_csv)
     file_labels.close()
     file_extrac.close()
@@ -216,7 +253,7 @@ for metric in macroavg_tech_metrics.keys():
 
 intensity_metrics = dict.fromkeys(["piano","mezzoforte","forte"])
 for intensity in intensity_metrics.keys():
-    intensity_metrics[intensity] = dict.fromkeys(["accuracy","precision","recall"])
+    intensity_metrics[intensity] = dict.fromkeys(["accuracy","precision","recall","f1-score"])
     for metric in intensity_metrics[intensity].keys():
         intensity_metrics[intensity][metric] = float(os.popen("cat " + logres_filename + '| grep -P \"^'+intensity+"  "+metric+' [0-9]\.[0-9]+"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
 
@@ -260,7 +297,7 @@ output_string += " \t"
 for intensity in intensity_metrics.keys():
     for metric in intensity_metrics[intensity].keys():
         output_string += "{:.4f}".format(intensity_metrics[intensity][metric])+"\t"
-    output_string += "\t"
+    # output_string += "\t"
 
 
 

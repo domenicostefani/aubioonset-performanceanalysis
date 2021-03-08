@@ -1,8 +1,9 @@
 
 
-SAVEPLOT = TRUE
+SAVEPLOT = FALSE
+SHOWPLOT = FALSE
 
-if(!SAVEPLOT){
+if(!SAVEPLOT && SHOWPLOT){
   library(tcltk)
 }
 
@@ -148,6 +149,7 @@ for(i in 1:length(intensities_name)){
   true_predictions_temp=length(na.omit(difference_temp))
   precision_temp <- true_predictions_temp / (true_predictions_temp + FP_temp)
   recall_temp <- true_predictions_temp / (true_predictions_temp + FN_temp)
+  f1_tmp <- 2.0 * ((precision_temp*recall_temp)/(precision_temp+recall_temp))
 
   print("")
   print(intensities_name[i])
@@ -266,8 +268,8 @@ if(SAVEPLOT){
   pdf(file = "./delay.pdf",   # The directory you want to save the file in
       width = 5, # The width of the plot in inches
       height = 8) # The height of the plot in inches
-}else{
-  x11()
+}else if (SHOWPLOT) {
+  x11() 
   prompt  <- "Close plot?"
   extra   <- ""
 }
@@ -288,7 +290,7 @@ print(paste(percentage," of the correctly detected onsets fall in the range [",l
 
 if(SAVEPLOT){
   dev.off()
-}else{
+}else if (SHOWPLOT) {
   capture <- tk_messageBox(message = prompt, detail = extra)
 }
 
@@ -305,8 +307,8 @@ bx <- barplot(metrics,
               ylim=c(0,1))
 
 text(bx,metrics*.9,labels = format(round(metrics, 4), nsmall = 4))
-if(!SAVEPLOT){
-  capture <- tk_messageBox(message = prompt, detail = extra)
-}else{
+if(SAVEPLOT){
   dev.off()
+}else if (SHOWPLOT) {
+  capture <- tk_messageBox(message = prompt, detail = extra)
 }

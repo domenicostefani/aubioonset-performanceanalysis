@@ -8,14 +8,15 @@
 #          - domenico.stefani96[at]gmail.com
 # Date:   05/11/2020
 
-usage() { echo "Usage: $0 [-B <BUFFER_SIZE>] [-H <HOP_SIZE>] [-s <SILENCE_THRESHOLD>] [-t <ONSET_THRESHOLD> -O <ONSET_METHOD>] [-M <MINIMUM_INTER_ONSET_INTERVAL_SECONDS>] [-dir <FILE_DIRECTORY>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-C <AUBIOONSET_COMMAND>] [-B <BUFFER_SIZE>] [-H <HOP_SIZE>] [-s <SILENCE_THRESHOLD>] [-t <ONSET_THRESHOLD> -O <ONSET_METHOD>] [-M <MINIMUM_INTER_ONSET_INTERVAL_SECONDS>] [-d <FILE_DIRECTORY>]" 1>&2; exit 1; }
 
 LOGFILE="logs/extractAllOnsets.log"
 mkdir -p logs
 rm -f $LOGFILE
 
-while getopts “:B:H:s:t:O:M:d:” opt; do
+while getopts “:C:B:H:s:t:O:M:d:” opt; do
   case $opt in
+    C) AUBIOONSET_COMMAND=$OPTARG ;;
     B) BUFFER_SIZE=$OPTARG ;;
     H) HOP_SIZE=$OPTARG ;;
     s) SILENCE_THRESHOLD=$OPTARG ;;
@@ -26,6 +27,8 @@ while getopts “:B:H:s:t:O:M:d:” opt; do
     *) usage ;;
   esac
 done
+
+echo "AUBIOONSET_COMMAND=$AUBIOONSET_COMMAND"
 
 echo "DIRECTORY=$FILEDIR"
 
@@ -58,20 +61,30 @@ if [[ -z "$ONSET_THRESHOLD" ]]; then
     echo "using default value for ONSET_THRESHOLD" >> $LOGFILE
     ONSET_THRESHOLD=0.75
 fi
-if [[ -z "$MINIMUM_INTER_ONSET_INTERVAL_SECONDS" ]]; then
-    echo "using default value for MINIMUM_INTER_ONSET_INTERVAL_MS_SECONDS" >> $LOGFILE
-    MINIMUM_INTER_ONSET_INTERVAL_SECONDS=0.020 # 20ms
+if [[ -z "$FILEDIR" ]]; then
+    echo "using default value for FILEDIR" >> $LOGFILE
+    FILEDIR="" # 20ms
 fi
-
+if [[ -z "$AUBIOONSET_COMMAND" ]]; then
+    echo "using default value for AUBIOONSET_COMMAND" >> $LOGFILE
+    AUBIOONSET_COMMAND="aubioonset"
+fi
 
 # Call extractOnset for all waw files in the folder
 FILEEXT="*.wav"
 FILEPATTERN="$FILEDIR$FILEEXT"
 for audiofile in $FILEPATTERN; do
+    if [ "$audiofile" = "$FILEEXT" ]
+    then
+        echo "No wav file in the current folder"
+        exit
+    fi
+
+    echo "processing is $audiofile"
 	source ./utility_scripts/extractOnset.sh $audiofile >> $LOGFILE
 done
 
-DELAY=$(python -c "print(int($HOP_SIZE*4.3))")
+DELAY=$(python3 -c "print(int($HOP_SIZE*4.3))")
 
 if [[ $ONSET_METHOD = "complex" ]] ; then
 	DELAY=$(python -c "print(int($HOP_SIZE*4.6))")

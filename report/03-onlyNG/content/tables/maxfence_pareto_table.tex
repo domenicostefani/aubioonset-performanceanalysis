@@ -1,0 +1,20 @@
+\begin{table}
+\centering
+\caption{Pareto front solution with f1-score (macro average over all techniques) as the first objective and maximum latency as the second, in the form of upper Tukey fence.}
+\label{%TODO: add label}
+\begin{tabular}{rlrrrrr}
+\toprule
+ \# &    Method &  F1-score &  Low Tukey fence (ms) &  Delay mean (ms) &  High Tukey fence (ms) &  Onsets inside fences (\%) \\
+\midrule
+ 1 &     phase &    0.7661 &                0.1893 &           2.9474 &                 5.2172 &                     94.74 \\
+ 2 &  specflux &    0.8588 &                1.9822 &           3.6889 &                 5.3771 &                     95.91 \\
+ 3 &  specflux &    0.9118 &                2.4233 &           4.0674 &                 5.6660 &                     95.37 \\
+ 4 &    energy &    0.9277 &                1.7777 &           4.0169 &                 6.1499 &                     97.54 \\
+ 5 &       hfc &    0.9281 &                2.4173 &           4.4778 &                 6.4050 &                     96.43 \\
+ 6 &  specdiff &    0.9342 &                2.8671 &           4.8262 &                 6.7204 &                     97.39 \\
+ 7 &    energy &    0.9355 &                2.7338 &           4.8830 &                 6.9670 &                     97.68 \\
+ 8 &    energy &    0.9421 &                3.6971 &           5.7221 &                 7.7386 &                     97.42 \\
+ 9 &  specdiff &    0.9488 &                3.8181 &           5.7946 &                 7.7554 &                     96.51 \\
+\bottomrule
+\end{tabular}
+\end{table}

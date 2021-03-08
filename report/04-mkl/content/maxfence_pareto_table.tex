@@ -1,0 +1,16 @@
+\begin{table}
+\centering
+\caption{Pareto front solution with f1-score (macro average over all techniques) as the first objective and maximum latency as the second, in the form of upper Tukey fence.}
+\label{%TODO: add label}
+\begin{tabular}{rlrrrrr}
+\toprule
+ \# &                         Method &  F1-score &  Low Tukey fence (ms) &  Delay mean (ms) &  High Tukey fence (ms) &  Onsets inside fences (\%) \\
+\midrule
+ 1 &     mkl (whitening, noisegate) &    0.8815 &                1.9788 &           4.0052 &                 5.9537 &                     93.92 \\
+ 2 &             mkl (No whitening) &    0.9511 &                2.7591 &           4.5746 &                 6.2722 &                     96.90 \\
+ 3 &  mkl (No whitening, noisegate) &    0.9525 &                3.2225 &           5.0274 &                 6.7553 &                     95.86 \\
+ 4 &             mkl (No whitening) &    0.9702 &                3.2442 &           5.0959 &                 6.8244 &                     96.74 \\
+ 5 &             mkl (No whitening) &    0.9764 &                4.1744 &           6.0215 &                 7.7192 &                     95.70 \\
+\bottomrule
+\end{tabular}
+\end{table}
