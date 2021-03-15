@@ -1,22 +1,28 @@
+#!/usr/bin/env Rscript
+args = commandArgs(trailingOnly=TRUE)
 
+if(length(args) != 1)
+  quit()
 
-SAVEPLOT = FALSE
-SHOWPLOT = FALSE
+DO_PLOT <- FALSE
+SAVEPLOT <- FALSE
+SHOWPLOT <- FALSE
 
 if(!SAVEPLOT && SHOWPLOT){
   library(tcltk)
 }
+CSV_PATH <- args[1]
 
-dir = (tail(unlist(strsplit(getwd(),"/")),1))
-CSV_PATH=""
-if(dir == "r_analysis"){
-  CSV_PATH = "../../output/onset_delay.csv"
-}else if(dir == "src"){
-  CSV_PATH = "output/onset_delay.csv"
-}else{
-  print("Call from a project directory")
-  exit()
-}
+# dir = (tail(unlist(strsplit(getwd(),"/")),1))
+# CSV_PATH=""
+# if(dir == "r_analysis"){
+#   CSV_PATH = "../../output/onset_delay.csv"
+# }else if(dir == "src"){
+#   CSV_PATH = "output/onset_delay.csv"
+# }else{
+#   print("Call from a project directory")
+#   exit()
+# }
 onsets = read.csv(CSV_PATH, na.strings = "NAN")
 
 
@@ -206,7 +212,7 @@ for(i in 1:length(technique_name)){
   recalls_by_technique[i] <- recall_temp
   f1s_by_technique[i] <- f1_tmp
 
-  
+
   prefix = technique_name[i]
   cat(sprintf("Delay summary (in ms)\n"))
   temp_delays_ms = na.omit(difference_temp)*1000
@@ -224,11 +230,11 @@ for(i in 1:length(technique_name)){
   cat(sprintf("%s  iqr_delay:  %.10f\n",prefix,delay_iqrs_by_technique[i]))
   cat(sprintf("%s  var_delay:  %.10f\n",prefix,delay_vars_by_technique[i]))
   cat(sprintf("%s  sd_delay:  %.10f\n",prefix,delay_sds_by_technique[i]))
-  
+
   k = 1.5
   delay_lower_fences_by_technique[i] <- quantile(temp_delays_ms,0.25) - (k *delay_iqrs_by_technique[i])
   delay_upper_fences_by_technique[i] <- quantile(temp_delays_ms,0.75) + (k *delay_iqrs_by_technique[i])
-  
+
   cat(sprintf("%s  lower_fence:  %.10f\n",prefix,delay_lower_fences_by_technique[i]))
   cat(sprintf("%s  upper_fence:  %.10f\n",prefix,delay_upper_fences_by_technique[i]))
   delay_inrange_percentage_by_technique[i] = 0
@@ -269,23 +275,29 @@ if(SAVEPLOT){
       width = 5, # The width of the plot in inches
       height = 8) # The height of the plot in inches
 }else if (SHOWPLOT) {
-  x11() 
+  x11()
   prompt  <- "Close plot?"
   extra   <- ""
 }
 
-bp = boxplot(delays_ms,main="Onset Detection Delay (ms)",ylab="Delay(ms)", ylim=c(0.0,20.0), yaxt="n")
-axis(2, at=seq(0, 20, by=1),las=1)
-lower_adj = bp$stats[1]
-upper_adj = bp$stats[5]
-sprintf("adjacent min-max:  %.10f   %.10f",lower_adj,upper_adj)
-percentage = 0
-for(onsetdiff in na.omit(onsets$difference)){
-  if(onsetdiff*1000 < upper_adj && onsetdiff*1000 > lower_adj){
-    percentage = percentage + 1
+lower_adj <- 0.001
+upper_adj <- 0.001
+percentage <- 0.001
+if (DO_PLOT)
+{
+  bp = boxplot(delays_ms,main="Onset Detection Delay (ms)",ylab="Delay(ms)", ylim=c(0.0,20.0), yaxt="n")
+  axis(2, at=seq(0, 20, by=1),las=1)
+  lower_adj = bp$stats[1]
+  upper_adj = bp$stats[5]
+  sprintf("adjacent min-max:  %.10f   %.10f",lower_adj,upper_adj)
+  percentage = 0
+  for(onsetdiff in na.omit(onsets$difference)){
+    if(onsetdiff*1000 < upper_adj && onsetdiff*1000 > lower_adj){
+      percentage = percentage + 1
+    }
   }
+  percentage = percentage/length(na.omit(onsets$difference))
 }
-percentage = percentage/length(na.omit(onsets$difference))
 print(paste(percentage," of the correctly detected onsets fall in the range [",lower_adj,",",upper_adj,"]ms"))
 
 if(SAVEPLOT){
@@ -301,14 +313,18 @@ if(SAVEPLOT){
       height = 8) # The height of the plot in inches
 }
 
-metrics <- c(c(accuracy,precision,recall))
-bx <- barplot(metrics,
-              names.arg = c("Accuracy","Precision","Recall"),
-              ylim=c(0,1))
-
-text(bx,metrics*.9,labels = format(round(metrics, 4), nsmall = 4))
+if (DO_PLOT)
+{
+  metrics <- c(c(accuracy,precision,recall))
+  bx <- barplot(metrics,
+                names.arg = c("Accuracy","Precision","Recall"),
+                ylim=c(0,1))
+  
+  text(bx,metrics*.9,labels = format(round(metrics, 4), nsmall = 4))
+}
 if(SAVEPLOT){
   dev.off()
 }else if (SHOWPLOT) {
   capture <- tk_messageBox(message = prompt, detail = extra)
 }
+

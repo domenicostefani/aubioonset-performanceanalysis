@@ -8,13 +8,9 @@
 #          - domenico.stefani96[at]gmail.com
 # Date:   05/11/2020
 
-usage() { echo "Usage: $0 [-C <AUBIOONSET_COMMAND>] [-B <BUFFER_SIZE>] [-H <HOP_SIZE>] [-s <SILENCE_THRESHOLD>] [-t <ONSET_THRESHOLD> -O <ONSET_METHOD>] [-M <MINIMUM_INTER_ONSET_INTERVAL_SECONDS>] [-d <FILE_DIRECTORY>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-C <AUBIOONSET_COMMAND>] [-B <BUFFER_SIZE>] [-H <HOP_SIZE>] [-s <SILENCE_THRESHOLD>] [-t <ONSET_THRESHOLD> -O <ONSET_METHOD>] [-M <MINIMUM_INTER_ONSET_INTERVAL_SECONDS>] [-d <FILE_DIRECTORY>] [-e <OUTPUT_DIRECTORY>]" 1>&2; exit 1; }
 
-LOGFILE="logs/extractAllOnsets.log"
-mkdir -p logs
-rm -f $LOGFILE
-
-while getopts “:C:B:H:s:t:O:M:d:” opt; do
+while getopts “:C:B:H:s:t:O:M:d:e:” opt; do
   case $opt in
     C) AUBIOONSET_COMMAND=$OPTARG ;;
     B) BUFFER_SIZE=$OPTARG ;;
@@ -24,13 +20,15 @@ while getopts “:C:B:H:s:t:O:M:d:” opt; do
     O) ONSET_METHOD=$OPTARG ;;
     M) MINIMUM_INTER_ONSET_INTERVAL_SECONDS=$OPTARG ;;
     d) FILEDIR=$OPTARG ;;
+    e) ONSET_OUT_DIR=$OPTARG ;;
     *) usage ;;
   esac
 done
 
 echo "AUBIOONSET_COMMAND=$AUBIOONSET_COMMAND"
 
-echo "DIRECTORY=$FILEDIR"
+echo "INPUT DIRECTORY=$FILEDIR"
+echo "OUTPUT DIRECTORY=$ONSET_OUT_DIR"
 
 echo "BUFFER_SIZE=$BUFFER_SIZE"
 echo "HOP_SIZE=$HOP_SIZE"
@@ -38,6 +36,15 @@ echo "SILENCE_THRESHOLD=$SILENCE_THRESHOLD"
 echo "ONSET_THRESHOLD=$ONSET_THRESHOLD"
 echo "ONSET_METHOD=$ONSET_METHOD"
 echo "MINIMUM_INTER_ONSET_INTERVAL_SECONDS=$MINIMUM_INTER_ONSET_INTERVAL_SECONDS"
+
+if [[ -z "$ONSET_OUT_DIR" ]]; then
+    echo "using default value for ONSET_OUT_DIR"
+    ONSET_OUT_DIR="onsets_extracted/"
+fi
+
+LOGFILE=$ONSET_OUT_DIR"logs/extractAllOnsets.log"
+mkdir -p $ONSET_OUT_DIR/logs
+rm -f $LOGFILE
 
 # Available methods:<default|energy|hfc|complex|phase|specdiff|kl|mkl|specflux>
 if [[ -z "$ONSET_METHOD" ]]; then
@@ -69,6 +76,11 @@ if [[ -z "$AUBIOONSET_COMMAND" ]]; then
     echo "using default value for AUBIOONSET_COMMAND" >> $LOGFILE
     AUBIOONSET_COMMAND="aubioonset"
 fi
+
+ONSETSUBDIR="onsets_extracted/"
+ONSET_OUT_DIR="$ONSET_OUT_DIR$ONSETSUBDIR"
+mkdir -p $ONSET_OUT_DIR
+echo $ONSET_OUT_DIR
 
 # Call extractOnset for all waw files in the folder
 FILEEXT="*.wav"

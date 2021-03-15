@@ -49,6 +49,10 @@ if [[ -z "$AUBIOONSET_COMMAND" ]]; then
     echo "using default value for AUBIOONSET_COMMAND"
     AUBIOONSET_COMMAND="aubioonset"
 fi
+if [[ -z "$ONSET_OUT_DIR" ]]; then
+    echo "using default value for ONSET_OUT_DIR"
+    ONSET_OUT_DIR="onsets_extracted/"
+fi
 
 
 
@@ -64,7 +68,6 @@ fi
 fullfilename=$1	      # Use argument as input audio file
 filename="${1%.*}"    # Extract filename without extension
 filename="${filename#*/}" #remove basename
-ONSET_OUT_DIR="onsets_extracted/"
 mkdir -p $ONSET_OUT_DIR
 
 # Extract onsets with the parameters chosen
