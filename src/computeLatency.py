@@ -28,10 +28,9 @@ import os               # To call scripts
 import re               # Regexp, to parse script results
 from enum import Enum   # To specify parameter type
 import sys
-import pyperclip
 import tempfile
 
-def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer_size,hop_size,silence_threshold,onset_threshold,minimum_inter_onset_interval_s,max_onset_difference_s=0.02,do_ignore_early_onsets=True,samplerate=48000):
+def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer_size,hop_size,silence_threshold,onset_threshold,minimum_inter_onset_interval_s,max_onset_difference_s=0.02,do_ignore_early_onsets=True,samplerate=48000, failsafe=True):
     with tempfile.TemporaryDirectory(prefix="aubioonsetanalysis-") as TEMP_FOLDER:
         TEMP_FOLDER=TEMP_FOLDER+"/"
         ONSETS_EXTRACTED_DIR = TEMP_FOLDER+"onsets_extracted/"
@@ -156,70 +155,81 @@ def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer
         os.system("mkdir -p "+LOGRES_DIR)
         os.system("Rscript utility_scripts/r_analysis/analize_delays.r "+DELAYS_FILE+" > "+logres_filename)
 
-        glob_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
-        for metric in glob_metrics.keys():
-            glob_metrics[metric] = float(os.popen("cat " + logres_filename + '| grep -P \"\\\"'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
+        def process_R_results(results_filename):
+            glob_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
+            for metric in glob_metrics.keys():
+                glob_metrics[metric] = float(os.popen("cat " + results_filename + '| grep -P \"\\\"'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
 
-        macroavg_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
-        for metric in macroavg_metrics.keys():
-            macroavg_metrics[metric] = float(os.popen("cat " + logres_filename + '| grep -P \"\\\"avg\_'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
+            macroavg_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
+            for metric in macroavg_metrics.keys():
+                macroavg_metrics[metric] = float(os.popen("cat " + results_filename + '| grep -P \"\\\"avg\_'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
 
-        macroavg_tech_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
-        for metric in macroavg_tech_metrics.keys():
-            macroavg_tech_metrics[metric] = float(os.popen("cat " + logres_filename + '| grep -P \"\\\"avg\_tech\_'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
+            macroavg_tech_metrics = dict.fromkeys(["accuracy","precision","recall","f1-score"])
+            for metric in macroavg_tech_metrics.keys():
+                macroavg_tech_metrics[metric] = float(os.popen("cat " + results_filename + '| grep -P \"\\\"avg\_tech\_'+metric+': [0-9]\.[0-9]+\\\"\"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
 
-        intensity_metrics = dict.fromkeys(["piano","mezzoforte","forte"])
-        for intensity in intensity_metrics.keys():
-            intensity_metrics[intensity] = dict.fromkeys(["accuracy","precision","recall","f1-score"])
-            for metric in intensity_metrics[intensity].keys():
-                intensity_metrics[intensity][metric] = float(os.popen("cat " + logres_filename + '| grep -P \"^'+intensity+"  "+metric+' [0-9]\.[0-9]+"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
+            intensity_metrics = dict.fromkeys(["piano","mezzoforte","forte"])
+            for intensity in intensity_metrics.keys():
+                intensity_metrics[intensity] = dict.fromkeys(["accuracy","precision","recall","f1-score"])
+                for metric in intensity_metrics[intensity].keys():
+                    intensity_metrics[intensity][metric] = float(os.popen("cat " + results_filename + '| grep -P \"^'+intensity+"  "+metric+' [0-9]\.[0-9]+"' + '| grep -P -o \"[0-9]\.[0-9]+\"').read())
 
-        # Delay
-        adj_min = float(os.popen("cat " + logres_filename + '| grep -P -o \"\\[ [0-9]+\\.[0-9]+\"| grep -P -o \"[0-9]+\\.[0-9]+\"').read())
-        adj_max = float(os.popen("cat " + logres_filename + '| grep -P -o \", [0-9]+\\.[0-9]+ \\]ms\"| grep -P -o \"[0-9]+\\.[0-9]+\"').read())
-        avg = float(os.popen("cat " + logres_filename +     '| grep -P -o \"avg_delay_glob:  \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
-        perc = float(os.popen("cat " + logres_filename +    '| grep -P -o \"[0-9]\\.[0-9]+  of the corr\"| grep -P -o \"[0-9]\\.[0-9]+\"').read())
+            # Delay
+            adj_min = float(os.popen("cat " + results_filename + '| grep -P -o \"\\[ [0-9]+\\.[0-9]+\"| grep -P -o \"[0-9]+\\.[0-9]+\"').read())
+            adj_max = float(os.popen("cat " + results_filename + '| grep -P -o \", [0-9]+\\.[0-9]+ \\]ms\"| grep -P -o \"[0-9]+\\.[0-9]+\"').read())
+            avg = float(os.popen("cat " + results_filename +     '| grep -P -o \"avg_delay_glob:  \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+            perc = float(os.popen("cat " + results_filename +    '| grep -P -o \"[0-9]\\.[0-9]+  of the corr\"| grep -P -o \"[0-9]\\.[0-9]+\"').read())
 
-        mavg_t_mean = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_delay_mean: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
-        mavg_t_IQR = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_delay_iqr: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
-        mavg_t_var = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_delay_var: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
-        mavg_t_SD = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_delay_sd: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
-        mavg_t_lofence = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_lowfence: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
-        mavg_t_hifence = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_highfence: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
-        mavg_t_percIn = float(os.popen("cat " + logres_filename +    '| grep -P -o \"avg_tech_inrangeperc: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+            mavg_t_mean = float(os.popen("cat " + results_filename +    '| grep -P -o \"avg_tech_delay_mean: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+            mavg_t_IQR = float(os.popen("cat " + results_filename +    '| grep -P -o \"avg_tech_delay_iqr: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+            mavg_t_var = float(os.popen("cat " + results_filename +    '| grep -P -o \"avg_tech_delay_var: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+            mavg_t_SD = float(os.popen("cat " + results_filename +    '| grep -P -o \"avg_tech_delay_sd: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+            mavg_t_lofence = float(os.popen("cat " + results_filename +    '| grep -P -o \"avg_tech_lowfence: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+            mavg_t_hifence = float(os.popen("cat " + results_filename +    '| grep -P -o \"avg_tech_highfence: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
+            mavg_t_percIn = float(os.popen("cat " + results_filename +    '| grep -P -o \"avg_tech_inrangeperc: \\d+\\.\\d+\"| grep -P -o \"\\d+\\.\\d+\"').read())
 
-        relevant_info = {
-            "onset_method":onset_method,
-            "buffer_size":buffer_size,
-            "hop_size":hop_size,
-            "minimum_inter_onset_interval_s":minimum_inter_onset_interval_s,
-            "silence_threshold":silence_threshold,
-            "onset_threshold":onset_threshold,
-            "logres_filename":logres_filename
-        }
-
-        relevant_metrics = {
-            "glob_metrics":glob_metrics,
-            "macroavg_metrics":macroavg_metrics,
-            "macroavg_tech_metrics":macroavg_tech_metrics,
-            "intensity_metrics":intensity_metrics,
-            "mavg_t_mean":mavg_t_mean,
-            "mavg_t_IQR":mavg_t_IQR,
-            "mavg_t_var":mavg_t_var,
-            "mavg_t_SD":mavg_t_SD,
-            "mavg_t_lofence":mavg_t_lofence,
-            "mavg_t_hifence":mavg_t_hifence,
-            "mavg_t_percIn":mavg_t_percIn,
-            "deprecated_delay":{
-                "adj_min":adj_min,
-                "adj_max":adj_max,
-                "avg":avg,
-                "perc":perc
+            relevant_metrics = {
+                "glob_metrics":glob_metrics,
+                "macroavg_metrics":macroavg_metrics,
+                "macroavg_tech_metrics":macroavg_tech_metrics,
+                "intensity_metrics":intensity_metrics,
+                "mavg_t_mean":mavg_t_mean,
+                "mavg_t_IQR":mavg_t_IQR,
+                "mavg_t_var":mavg_t_var,
+                "mavg_t_SD":mavg_t_SD,
+                "mavg_t_lofence":mavg_t_lofence,
+                "mavg_t_hifence":mavg_t_hifence,
+                "mavg_t_percIn":mavg_t_percIn,
+                "deprecated_delay":{
+                    "adj_min":adj_min,
+                    "adj_max":adj_max,
+                    "avg":avg,
+                    "perc":perc
+                }
             }
-        }
+            return relevant_info, relevant_metrics
+        
+        # If failsafe is True, the function avoids raising an error
+        if failsafe:
+            try:
+                relevant_info = {
+                    "onset_method":onset_method,
+                    "buffer_size":buffer_size,
+                    "hop_size":hop_size,
+                    "minimum_inter_onset_interval_s":minimum_inter_onset_interval_s,
+                    "silence_threshold":silence_threshold,
+                    "onset_threshold":onset_threshold,
+                    "results_filename":logres_filename
+                }
+                relevant_info, relevant_metrics = process_R_results(logres_filename)
+            except:
+                relevant_metrics = None
+        else:
+            relevant_info, relevant_metrics = process_R_results(logres_filename)        
         return relevant_info, relevant_metrics
 
-def create_string(info,metrics,use_oldformat=False):
+def create_string(info,metrics,use_oldformat=False,do_copy = False,failsafe = True):
+    if info:
         output_string = ""
         output_string += info["onset_method"]+"\t"
         output_string += str(info["buffer_size"])+"\t"
@@ -227,6 +237,7 @@ def create_string(info,metrics,use_oldformat=False):
         output_string += str(info["minimum_inter_onset_interval_s"])+"\t"
         output_string += str(info["silence_threshold"])+"\t"
         output_string += str(info["onset_threshold"])+"\t \t"
+    if metrics:
         output_string += "{:.4f}".format(metrics["glob_metrics"]["accuracy"])+"\t"
         output_string += "{:.4f}".format(metrics["glob_metrics"]["precision"])+"\t"
         output_string += "{:.4f}".format(metrics["glob_metrics"]["recall"])+"\t"
@@ -262,12 +273,12 @@ def create_string(info,metrics,use_oldformat=False):
         output_string += "{:.4f}".format(metrics["mavg_t_hifence"])+"\t"
         output_string += "{:.4f}".format(metrics["mavg_t_percIn"])+"\t"
 
-        output_string += " \t"+info["logres_filename"]
-        print(output_string)
-
+        output_string += " \t"+info["results_filename"]        
+    if do_copy:
+        import pyperclip
         pyperclip.copy(output_string)
         spam = pyperclip.paste()
-        return output_string
+    return output_string
 
 def main():
     # *Main comparation hyperparameter*
@@ -293,6 +304,10 @@ def main():
     print("\nAudio from folder \""+AUDIO_DIRECTORY+"\"\n")
     print("Aubio command: \""+AUBIOONSET_COMMAND+"\"\n")
 
+    READ_BUFFERSIZE = -1
+    READ_SILENCE = ""
+    READ_THRESH = ""
+    READ_METHOD = ""
     if len(sys.argv) == 2:
         READ_METHOD = sys.argv[1]
     elif len(sys.argv) == 3:
@@ -361,7 +376,7 @@ def main():
     MINIMUM_INTER_ONSET_INTERVAL_SECONDS = 0.020 #readParam("MINIMUM_INTER_ONSET_INTERVAL_SECONDS",0.020,ParamType.FLOAT)
 
     relevant_info, relevant_metrics = perform_main_analysis(AUDIO_DIRECTORY,AUBIOONSET_COMMAND,ONSET_METHOD,BUFFER_SIZE,HOP_SIZE,SILENCE_THRESHOLD,ONSET_THRESHOLD,MINIMUM_INTER_ONSET_INTERVAL_SECONDS,MAX_ONSET_DIFFERENCE_S,IGNORE_NEG)
-    create_string(relevant_info,relevant_metrics)
+    print(create_string(relevant_info,relevant_metrics, do_copy=True))
 
 if __name__ == "__main__":
     main()
