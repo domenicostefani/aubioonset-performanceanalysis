@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: python-parallel
+Version: 0.9.1
+Summary: Simple parallelism for the everyday developers
+License: MIT
+Author: Santiago Basulto
+Author-email: santiago.basulto@gmail.com
+Requires-Python: >=3.6,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8

@@ -1,0 +1,118 @@
+2021-03-19 17:12:36,034 - inspyred.ec - DEBUG - generating initial population
+2021-03-19 17:12:36,034 - inspyred.ec - DEBUG - evaluating initial population
+2021-03-19 17:20:58,576 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:20:58,576 - inspyred.ec - DEBUG - archiving initial population
+2021-03-19 17:20:58,576 - inspyred.ec - DEBUG - archive size is now 0
+2021-03-19 17:20:58,576 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:20:58,576 - inspyred.ec - DEBUG - observation using file_observer at generation 0 and evaluation 10
+2021-03-19 17:20:58,576 - inspyred.ec - DEBUG - observation using plot_observer at generation 0 and evaluation 10
+2021-03-19 17:20:58,626 - inspyred.ec - DEBUG - termination test using generation_termination at generation 0 and evaluation 10
+2021-03-19 17:20:58,626 - inspyred.ec - DEBUG - selection using tournament_selection at generation 0 and evaluation 10
+2021-03-19 17:20:58,626 - inspyred.ec - DEBUG - selected 10 candidates
+2021-03-19 17:20:58,627 - inspyred.ec - DEBUG - variation using arithmetic_crossover at generation 0 and evaluation 10
+2021-03-19 17:20:58,627 - inspyred.ec - DEBUG - variation using laplace_crossover at generation 0 and evaluation 10
+2021-03-19 17:20:58,627 - inspyred.ec - DEBUG - variation using gaussian_mutation at generation 0 and evaluation 10
+2021-03-19 17:20:58,627 - inspyred.ec - DEBUG - created 10 offspring
+2021-03-19 17:20:58,627 - inspyred.ec - DEBUG - evaluation using evaluator at generation 0 and evaluation 10
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - replacement using generational_replacement at generation 0 and evaluation 20
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - migration using default_migration at generation 0 and evaluation 20
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - archival using default_archiver at generation 0 and evaluation 20
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - archive size is now 0
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - observation using file_observer at generation 1 and evaluation 20
+2021-03-19 17:29:40,741 - inspyred.ec - DEBUG - observation using plot_observer at generation 1 and evaluation 20
+2021-03-19 17:29:40,742 - inspyred.ec - DEBUG - termination test using generation_termination at generation 1 and evaluation 20
+2021-03-19 17:29:40,742 - inspyred.ec - DEBUG - selection using tournament_selection at generation 1 and evaluation 20
+2021-03-19 17:29:40,742 - inspyred.ec - DEBUG - selected 10 candidates
+2021-03-19 17:29:40,742 - inspyred.ec - DEBUG - variation using arithmetic_crossover at generation 1 and evaluation 20
+2021-03-19 17:29:40,742 - inspyred.ec - DEBUG - variation using laplace_crossover at generation 1 and evaluation 20
+2021-03-19 17:29:40,742 - inspyred.ec - DEBUG - variation using gaussian_mutation at generation 1 and evaluation 20
+2021-03-19 17:29:40,742 - inspyred.ec - DEBUG - created 10 offspring
+2021-03-19 17:29:40,742 - inspyred.ec - DEBUG - evaluation using evaluator at generation 1 and evaluation 20
+2021-03-19 17:39:42,427 - inspyred.ec - DEBUG - replacement using generational_replacement at generation 1 and evaluation 30
+2021-03-19 17:39:42,427 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:39:42,427 - inspyred.ec - DEBUG - migration using default_migration at generation 1 and evaluation 30
+2021-03-19 17:39:42,427 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:39:42,427 - inspyred.ec - DEBUG - archival using default_archiver at generation 1 and evaluation 30
+2021-03-19 17:39:42,427 - inspyred.ec - DEBUG - archive size is now 0
+2021-03-19 17:39:42,427 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:39:42,428 - inspyred.ec - DEBUG - observation using file_observer at generation 2 and evaluation 30
+2021-03-19 17:39:42,428 - inspyred.ec - DEBUG - observation using plot_observer at generation 2 and evaluation 30
+2021-03-19 17:39:42,429 - inspyred.ec - DEBUG - termination test using generation_termination at generation 2 and evaluation 30
+2021-03-19 17:39:42,429 - inspyred.ec - DEBUG - selection using tournament_selection at generation 2 and evaluation 30
+2021-03-19 17:39:42,429 - inspyred.ec - DEBUG - selected 10 candidates
+2021-03-19 17:39:42,429 - inspyred.ec - DEBUG - variation using arithmetic_crossover at generation 2 and evaluation 30
+2021-03-19 17:39:42,429 - inspyred.ec - DEBUG - variation using laplace_crossover at generation 2 and evaluation 30
+2021-03-19 17:39:42,429 - inspyred.ec - DEBUG - variation using gaussian_mutation at generation 2 and evaluation 30
+2021-03-19 17:39:42,429 - inspyred.ec - DEBUG - created 10 offspring
+2021-03-19 17:39:42,429 - inspyred.ec - DEBUG - evaluation using evaluator at generation 2 and evaluation 30
+2021-03-19 17:50:02,833 - inspyred.ec - DEBUG - replacement using generational_replacement at generation 2 and evaluation 40
+2021-03-19 17:50:02,834 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:50:02,834 - inspyred.ec - DEBUG - migration using default_migration at generation 2 and evaluation 40
+2021-03-19 17:50:02,834 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:50:02,834 - inspyred.ec - DEBUG - archival using default_archiver at generation 2 and evaluation 40
+2021-03-19 17:50:02,834 - inspyred.ec - DEBUG - archive size is now 0
+2021-03-19 17:50:02,834 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 17:50:02,834 - inspyred.ec - DEBUG - observation using file_observer at generation 3 and evaluation 40
+2021-03-19 17:50:02,834 - inspyred.ec - DEBUG - observation using plot_observer at generation 3 and evaluation 40
+2021-03-19 17:50:02,835 - inspyred.ec - DEBUG - termination test using generation_termination at generation 3 and evaluation 40
+2021-03-19 17:50:02,835 - inspyred.ec - DEBUG - selection using tournament_selection at generation 3 and evaluation 40
+2021-03-19 17:50:02,835 - inspyred.ec - DEBUG - selected 10 candidates
+2021-03-19 17:50:02,835 - inspyred.ec - DEBUG - variation using arithmetic_crossover at generation 3 and evaluation 40
+2021-03-19 17:50:02,835 - inspyred.ec - DEBUG - variation using laplace_crossover at generation 3 and evaluation 40
+2021-03-19 17:50:02,835 - inspyred.ec - DEBUG - variation using gaussian_mutation at generation 3 and evaluation 40
+2021-03-19 17:50:02,835 - inspyred.ec - DEBUG - created 10 offspring
+2021-03-19 17:50:02,835 - inspyred.ec - DEBUG - evaluation using evaluator at generation 3 and evaluation 40
+2021-03-19 18:00:18,230 - inspyred.ec - DEBUG - replacement using generational_replacement at generation 3 and evaluation 50
+2021-03-19 18:00:18,230 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:00:18,230 - inspyred.ec - DEBUG - migration using default_migration at generation 3 and evaluation 50
+2021-03-19 18:00:18,230 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:00:18,230 - inspyred.ec - DEBUG - archival using default_archiver at generation 3 and evaluation 50
+2021-03-19 18:00:18,230 - inspyred.ec - DEBUG - archive size is now 0
+2021-03-19 18:00:18,230 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:00:18,230 - inspyred.ec - DEBUG - observation using file_observer at generation 4 and evaluation 50
+2021-03-19 18:00:18,231 - inspyred.ec - DEBUG - observation using plot_observer at generation 4 and evaluation 50
+2021-03-19 18:00:18,232 - inspyred.ec - DEBUG - termination test using generation_termination at generation 4 and evaluation 50
+2021-03-19 18:00:18,232 - inspyred.ec - DEBUG - selection using tournament_selection at generation 4 and evaluation 50
+2021-03-19 18:00:18,232 - inspyred.ec - DEBUG - selected 10 candidates
+2021-03-19 18:00:18,232 - inspyred.ec - DEBUG - variation using arithmetic_crossover at generation 4 and evaluation 50
+2021-03-19 18:00:18,232 - inspyred.ec - DEBUG - variation using laplace_crossover at generation 4 and evaluation 50
+2021-03-19 18:00:18,232 - inspyred.ec - DEBUG - variation using gaussian_mutation at generation 4 and evaluation 50
+2021-03-19 18:00:18,232 - inspyred.ec - DEBUG - created 10 offspring
+2021-03-19 18:00:18,232 - inspyred.ec - DEBUG - evaluation using evaluator at generation 4 and evaluation 50
+2021-03-19 18:10:09,067 - inspyred.ec - DEBUG - replacement using generational_replacement at generation 4 and evaluation 60
+2021-03-19 18:10:09,068 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:10:09,068 - inspyred.ec - DEBUG - migration using default_migration at generation 4 and evaluation 60
+2021-03-19 18:10:09,068 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:10:09,068 - inspyred.ec - DEBUG - archival using default_archiver at generation 4 and evaluation 60
+2021-03-19 18:10:09,068 - inspyred.ec - DEBUG - archive size is now 0
+2021-03-19 18:10:09,068 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:10:09,068 - inspyred.ec - DEBUG - observation using file_observer at generation 5 and evaluation 60
+2021-03-19 18:10:09,068 - inspyred.ec - DEBUG - observation using plot_observer at generation 5 and evaluation 60
+2021-03-19 18:10:09,069 - inspyred.ec - DEBUG - termination test using generation_termination at generation 5 and evaluation 60
+2021-03-19 18:10:09,069 - inspyred.ec - DEBUG - selection using tournament_selection at generation 5 and evaluation 60
+2021-03-19 18:10:09,069 - inspyred.ec - DEBUG - selected 10 candidates
+2021-03-19 18:10:09,069 - inspyred.ec - DEBUG - variation using arithmetic_crossover at generation 5 and evaluation 60
+2021-03-19 18:10:09,069 - inspyred.ec - DEBUG - variation using laplace_crossover at generation 5 and evaluation 60
+2021-03-19 18:10:09,069 - inspyred.ec - DEBUG - variation using gaussian_mutation at generation 5 and evaluation 60
+2021-03-19 18:10:09,069 - inspyred.ec - DEBUG - created 10 offspring
+2021-03-19 18:10:09,069 - inspyred.ec - DEBUG - evaluation using evaluator at generation 5 and evaluation 60
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - replacement using generational_replacement at generation 5 and evaluation 70
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - migration using default_migration at generation 5 and evaluation 70
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - archival using default_archiver at generation 5 and evaluation 70
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - archive size is now 0
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - population size is now 10
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - observation using file_observer at generation 6 and evaluation 70
+2021-03-19 18:18:40,483 - inspyred.ec - DEBUG - observation using plot_observer at generation 6 and evaluation 70
+2021-03-19 18:18:40,484 - inspyred.ec - DEBUG - termination test using generation_termination at generation 6 and evaluation 70
+2021-03-19 18:18:40,484 - inspyred.ec - DEBUG - selection using tournament_selection at generation 6 and evaluation 70
+2021-03-19 18:18:40,484 - inspyred.ec - DEBUG - selected 10 candidates
+2021-03-19 18:18:40,484 - inspyred.ec - DEBUG - variation using arithmetic_crossover at generation 6 and evaluation 70
+2021-03-19 18:18:40,484 - inspyred.ec - DEBUG - variation using laplace_crossover at generation 6 and evaluation 70
+2021-03-19 18:18:40,484 - inspyred.ec - DEBUG - variation using gaussian_mutation at generation 6 and evaluation 70
+2021-03-19 18:18:40,484 - inspyred.ec - DEBUG - created 10 offspring
+2021-03-19 18:18:40,484 - inspyred.ec - DEBUG - evaluation using evaluator at generation 6 and evaluation 70

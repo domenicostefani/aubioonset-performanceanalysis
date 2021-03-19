@@ -1,0 +1,112 @@
+
+TO THE AUTHORS BEST KNOWLEDGE THERE IS NOT OTHER 
+
+Title: Bio-Inspired optimization for real-time onset detection
+
+Introduction
+(SCHEMA)
+Conventional OD methods can be tuned
+Real time requires also low latency and variance
+Our problem applies to monophonic guitar (single sounds) MENTION PROBLEM SPECIFICS
+Manual and then automated search with the use of EA
+We provide a framework for formal optimization in time constrained online onset detection.
+Manual optimization of onset parameter is fallible and time-consuming
+
+Selection of onsets
+Selection of problem (f-measure & IQR)
+Application
+Optimization (Manual and EA)
+Description of EA
+Comparison with Pareto Fronts
+Results
+
+
+
+
+
+
+(WRITTEN)
+To date, most of the research and applications for onset detection methods 
+concentrate either offline uses or real-time cases with loose time constraints, 
+where the latter have seen the use of a relatively wide range of probabilistic
+methods such as deep neural networks and machine learning approaches.            TODO cite alllll
+However, the less explored field of performance oriented augmentations for 
+regular instruments (more conventional augmentations and smart instruments)      TODO cite vision and smart instuments
+requires onset detection to be performed with tighter constraints than the 
+aforementioned methods (~20ms) and often require to run on embedded devices like
+single boards computers that can be integrated in a smart instrument and have
+limited computing power when compared to a regular computer.                     TODO Maybe cite elk, bela, beaglebone
+Non probabilistic OD algorithms require some parameter tuning, which can allow 
+to reduce false positives and increase general performance.
+When developing a smart processing system for an acoustic guitar, we had the 
+need to perform efficient OD, with a realonset-to-detection latency smaller than
+about 14ms: the tool of choice was the Aubio library.                            TODO: cite Aubio
+The Aubio library, orginally developed by Brossier in XXXX and later improved 
+throughout the years, offers a real-time OD framework containing implementations
+of some of the most relevant non-probababilistic OD methods along with a dynamic 
+thresholding algorithm and some improvements that were added along the way, such
+as Adaptive Whitening. Many of the parameters of aubio-onset, described in depth TODO Cite Adaptive whitening
+in the next sections, were bounded by the problem requirements, however the 
+onset method used, the silence threshold and the onset threshold required tuning
+in order to get the best performance, which in the context of real-time OD is 
+both a low count of false positives/negatives and low detection latency.
+Moreover, the distribution of detection latency needs to show as little 
+variability as possible, so that the time at which the real onset happens can be
+found by subtracting to the detection time a fixed time interval.
+In this paper we preset a simple framework for parameter tuning for real-time 
+onset detection with Aubio and an automated bio-inspired optimizer that makes 
+use of evolution concepts to find the optimal paramter values.                   TODO: EXPAND ON EAs and the one used
+
+Related works
+This work is based on the Aubio library [] at its current version 
+[current version] which includes improvements to the original model such as the
+addition of Adaptive whitening [] and the corrections to some initialization     TODO Cite Adaptive whitening
+parameters. 
+Aubio offers 7 different methods
+bla bla bla
+Essentia, similar library (better words) includes these methods:
+bla bla bla
+Mirex best solutions and Superflux missing. (However Mirex is not real-time)
+
+In the end Aubio offers ready to use and no hassle real-time OD.
+
+Even quicker response can be found in hybrid time-spectrum approaches like the 
+one used by Turchet [cite], which however tends to improve onset labeling 
+precision (timewise) and not necessarily the overall latency                     Check with professor, bettwe not to spit but to show why we don't use it.
+
+On the optimization side, Evolutionary Computation algorithms such as variations
+of GA have beed applied successfully in many fields as metaheuristics since they (cite GA)
+do not make assumptions on the nature of the problem at hand, lending themselves
+to a wide range of problems. (better word ist of problem)
+https://www.researchgate.net/publication/322150421_MOOGA_Parameter_Optimization_for_Onset_Detection_in_EMG_Signals
+
+
+
+
+
+
+
+
+
+Related works
+Cite aubio
+cite brossier paper with f-measure optimization
+"Using either the F-measure or a maximum rate of false detection, the parameters
+can be fitted over a given subset of the database"
+
+cite Inspyred (https://github.com/aarongarrett/inspyred) as a footnote
+
+Cite MIREX to show scarcity of tight real-time constrained applications
+Cite Turchet cajon method
+
+Maybe cite Essentia and the similarities with aubio
+
+Check if EMG onsets are similar
+https://www.researchgate.net/publication/322150421_MOOGA_Parameter_Optimization_for_Onset_Detection_in_EMG_Signals
+
+Cite book
+
+Evolutionary Computation Applied to Sound Synthesis
+https://ieeexplore.ieee.org/document/6204460
+
+http://elib.mi.sanu.ac.rs/files/journals/yjor/39/yujorn39p157-177.pdf

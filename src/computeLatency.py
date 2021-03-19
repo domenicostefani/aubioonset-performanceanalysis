@@ -30,7 +30,7 @@ from enum import Enum   # To specify parameter type
 import sys
 import tempfile
 
-def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer_size,hop_size,silence_threshold,onset_threshold,minimum_inter_onset_interval_s,max_onset_difference_s=0.02,do_ignore_early_onsets=True,samplerate=48000, failsafe=True):
+def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer_size,hop_size,silence_threshold,onset_threshold,minimum_inter_onset_interval_s,max_onset_difference_s=0.02,do_ignore_early_onsets=True,samplerate=48000, failsafe=True,save_results=True):
     with tempfile.TemporaryDirectory(prefix="aubioonsetanalysis-") as TEMP_FOLDER:
         TEMP_FOLDER=TEMP_FOLDER+"/"
         ONSETS_EXTRACTED_DIR = TEMP_FOLDER+"onsets_extracted/"
@@ -225,7 +225,9 @@ def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer
             except:
                 relevant_metrics = None
         else:
-            relevant_info, relevant_metrics = process_R_results(logres_filename)        
+            relevant_info, relevant_metrics = process_R_results(logres_filename)
+        if save_results is not True:
+            os.system("rm -rf "+logres_filename)
         return relevant_info, relevant_metrics
 
 def create_string(info,metrics,use_oldformat=False,do_copy = False,failsafe = True):
@@ -243,11 +245,12 @@ def create_string(info,metrics,use_oldformat=False,do_copy = False,failsafe = Tr
         output_string += "{:.4f}".format(metrics["glob_metrics"]["recall"])+"\t"
         output_string += "{:.4f}".format(metrics["glob_metrics"]["f1-score"])+"\t"
         output_string += " \t"
-        output_string += "{:.4f}".format(metrics["macroavg_metrics"]["accuracy"])+"\t"
-        output_string += "{:.4f}".format(metrics["macroavg_metrics"]["precision"])+"\t"
-        output_string += "{:.4f}".format(metrics["macroavg_metrics"]["recall"])+"\t"
-        output_string += "{:.4f}".format(metrics["macroavg_metrics"]["f1-score"])+"\t"
-        output_string += " \t"
+        if use_oldformat:
+            output_string += "{:.4f}".format(metrics["macroavg_metrics"]["accuracy"])+"\t"
+            output_string += "{:.4f}".format(metrics["macroavg_metrics"]["precision"])+"\t"
+            output_string += "{:.4f}".format(metrics["macroavg_metrics"]["recall"])+"\t"
+            output_string += "{:.4f}".format(metrics["macroavg_metrics"]["f1-score"])+"\t"
+            output_string += " \t"
         output_string += "{:.4f}".format(metrics["macroavg_tech_metrics"]["accuracy"])+"\t"
         output_string += "{:.4f}".format(metrics["macroavg_tech_metrics"]["precision"])+"\t"
         output_string += "{:.4f}".format(metrics["macroavg_tech_metrics"]["recall"])+"\t"

@@ -21,43 +21,54 @@
 # - macro avg. f1-score (f1-score for each playing technique in the dataset)
 # 
 
-# TODO: Check whether these are all used
 import pylab
 from random import Random
 import inspyred
 import sys
-import numpy as np
 import computeLatency
-from inspyred import ec
+import os
 
-NUMBER_OF_AVAILABLE_CPUS = 6
+PARALLEL = False
+RESFOLDER="evolutionaryOptimizerResults/"
 
 # """--Parameters for aubio ---------------------------------------------------"""
 AUDIO_DIRECTORY = "audiofiles"
-aubioonset_command = "aubioonset"
-default_onset_method = "hfc" # TODO: Later change this
+AUBIOONSET_COMMAND = "aubioonset"
+default_onset_method = "hfc"
 default_buffer_size = 64
 HOP_SIZE = 64
 MIN_IOI = 0.02
 
-MIN_ONSET_THRESH   = 0.1 # TODO: Finetune when working
+MIN_ONSET_THRESH   = 0.1
 MAX_ONSET_THRESH   = 3.6
 MIN_SILENCE_THRESH = -60
 MAX_SILENCE_THRESH = -30
 
 # """--Parameters for the EC---------------------------------------------------"""
 
-populationSize = 6
+# THESE WORK (with arithmetic_crossover & gaussian_mutation) but not optimal
+# populationSize = 6
+# numberOfGenerations = 30
+# numberOfEvaluations = 2500                    # used with evaluation_termination
+# tournamentSize = 3
+# mutationRate = 0.7
+# gaussianMean = 0
+# gaussianStdev = 1.0
+# crossoverRate = 0.9
+# selectionSize = populationSize
+# numElites = 0
+
+
+populationSize = 10
 numberOfGenerations = 30
-numberOfEvaluations = 2500                    # used with evaluation_termination
-tournamentSize = 3
+numberOfEvaluations = 400                    # used with evaluation_termination
+tournamentSize = 4
 mutationRate = 0.7
 gaussianMean = 0
-gaussianStdev = 1.0
-crossoverRate = 0.9
-# numCrossoverPoints =  5           TODO: check what this does
+gaussianStdev = 3.0
+crossoverRate = 0.7
 selectionSize = populationSize
-numElites = 0
+numElites = 1
 
 # """--Visualization-----------------------------------------------------------"""
 display = True
@@ -72,7 +83,7 @@ class ConfigurationEvaluator():
         # self.bounder = ec.DiscreteBounder([0,1]) # Discrete bounder to boolean values
         self.bounder = None
         self.maximize = True           # Flag to define the problem nature
-        self.genCount = 0               # generation count
+        # self.genCount = 0               # generation count
 
         self.aubioparameters = aubioparameters
 
@@ -88,30 +99,55 @@ class ConfigurationEvaluator():
     def evaluator(self, candidates, args):
         fitness = []
         for candidate in candidates:
-            # onset_threshold = candidate[0]
-            # silence_threshold = candidate[1]
-            # info, metrics = computeLatency.perform_main_analysis(audio_directory = self.aubioparameters['audio_directory'],
-            #                                                      aubioonset_command = self.aubioparameters['aubioonset_command'],
-            #                                                      onset_method = self.aubioparameters['onset_method'],
-            #                                                      buffer_size = self.aubioparameters['buffer_size'],
-            #                                                      hop_size = self.aubioparameters['hop_size'],
-            #                                                      silence_threshold = silence_threshold,
-            #                                                      onset_threshold = onset_threshold,
-            #                                                      minimum_inter_onset_interval_s = self.aubioparameters['minimum_inter_onset_interval_s'],
-            #                                                      max_onset_difference_s = self.aubioparameters['max_onset_difference_s'],
-            #                                                      do_ignore_early_onsets = self.aubioparameters['do_ignore_early_onsets'],
-            #                                                      samplerate = self.aubioparameters['samplerate'],
-            #                                                      failsafe = self.aubioparameters['failsafe'])
-            # if metrics:
-            #     fitness_c  = metrics["macroavg_tech_metrics"]["f1-score"]
-            # else:
-            #     fitness_c = 0
-            # fitness.append(fitness_c)
-            fitness.append(1)
+            onset_threshold = candidate[0]
+            silence_threshold = candidate[1]
+            info, metrics = computeLatency.perform_main_analysis(audio_directory = self.aubioparameters['audio_directory'],
+                                                                 aubioonset_command = self.aubioparameters['aubioonset_command'],
+                                                                 onset_method = self.aubioparameters['onset_method'],
+                                                                 buffer_size = self.aubioparameters['buffer_size'],
+                                                                 hop_size = self.aubioparameters['hop_size'],
+                                                                 silence_threshold = silence_threshold,
+                                                                 onset_threshold = onset_threshold,
+                                                                 minimum_inter_onset_interval_s = self.aubioparameters['minimum_inter_onset_interval_s'],
+                                                                 max_onset_difference_s = self.aubioparameters['max_onset_difference_s'],
+                                                                 do_ignore_early_onsets = self.aubioparameters['do_ignore_early_onsets'],
+                                                                 samplerate = self.aubioparameters['samplerate'],
+                                                                 failsafe = self.aubioparameters['failsafe'],
+                                                                 save_results=False)
+            # info, metrics = computeLatency.perform_main_analysis(audio_directory = "audiofiles", #self.aubioparameters['audio_directory'],
+            #                                                      aubioonset_command = "aubioonset", #self.aubioparameters['aubioonset_command'],
+            #                                                      onset_method = "hfc", #self.aubioparameters['onset_method'],
+            #                                                      buffer_size = 64, #self.aubioparameters['buffer_size'],
+            #                                                      hop_size = 64, #self.aubioparameters['hop_size'],
+            #                                                      onset_threshold = onset_threshold, #onset_threshold,
+            #                                                      silence_threshold = silence_threshold, #silence_threshold,
+            #                                                      minimum_inter_onset_interval_s = 0.02, #self.aubioparameters['minimum_inter_onset_interval_s'],
+            #                                                      max_onset_difference_s = 0.02, #self.aubioparameters['max_onset_difference_s'],
+            #                                                      do_ignore_early_onsets = True, #self.aubioparameters['do_ignore_early_onsets'],
+            #                                                      samplerate = 48000, #self.aubioparameters['samplerate'],
+            #                                                      failsafe = True, #self.aubioparameters['failsafe'],
+            #                                                      save_results = False)
+            if metrics:
+                fitness_c  = metrics["macroavg_tech_metrics"]["f1-score"]
+            else:
+                fitness_c = 0
+            fitness.append(fitness_c)
+
+            # For testing purpose I'll leave the next line here
+            # fitness.append(self.rng.random())
+            # import time
+            # time.sleep(3)
         # self.genCount += 1
         return fitness
 
-def main(rng, onset_method=default_onset_method, buffer_size=default_buffer_size, display=False):
+def main(rng, onset_method=default_onset_method, buffer_size=default_buffer_size, display=False, runstring=""):
+
+    aubioonset_command = AUBIOONSET_COMMAND
+    real_onset_method = onset_method
+    if onset_method == "mkl(noaw)":
+        print("Disabling whitening")
+        onset_method = "mkl"
+        aubioonset_command = "./utility_scripts/customAubio/aubioonset-mkl-nowhitening"
     aubioparameters = {"audio_directory" : AUDIO_DIRECTORY,
                        "aubioonset_command" : aubioonset_command,
                        "onset_method" : onset_method,
@@ -121,11 +157,11 @@ def main(rng, onset_method=default_onset_method, buffer_size=default_buffer_size
                        "max_onset_difference_s" : 0.02,
                        "do_ignore_early_onsets" : True,
                        "samplerate" : 48000,
-                       "failsafe" : True}
+                       "failsafe" : True,
+                       "real_onset_method":real_onset_method}
     problem = ConfigurationEvaluator(rng,aubioparameters)
 
     # --------------------------------------------------------------------------- #
-    # EA configuration TODO: Configure properly
 
     # the evolutionary algorithm (EvolutionaryComputation is a fully configurable evolutionary algorithm)
     # standard GA, ES, SA, DE, EDA, PAES, NSGA2, PSO and ACO are also available
@@ -133,13 +169,12 @@ def main(rng, onset_method=default_onset_method, buffer_size=default_buffer_size
 
     # observers: provide various logging features
     # if display:
-    # ea.observer = [#inspyred.ec.observers.stats_observer,
-                   # inspyred.ec.observers.file_observer,
-                    # inspyred.ec.observers.plot_observer
+    ea.observer = [#inspyred.ec.observers.stats_observer,
+                   inspyred.ec.observers.file_observer,
+                   inspyred.ec.observers.plot_observer
                     #inspyred.ec.observers.best_observer,
                     #inspyred.ec.observers.population_observer
-                    # ]
-    ea.observer = inspyred.ec.observers.plot_observer
+                  ]
 
 
     # selection operator
@@ -153,7 +188,7 @@ def main(rng, onset_method=default_onset_method, buffer_size=default_buffer_size
     ea.variator = [inspyred.ec.variators.arithmetic_crossover,
                 #    inspyred.ec.variators.blend_crossover,
                 #    inspyred.ec.variators.heuristic_crossover,
-                #    inspyred.ec.variators.laplace_crossover,
+                   inspyred.ec.variators.laplace_crossover,
                 # #    inspyred.ec.variators.simulated_binary_crossover,
                    inspyred.ec.variators.gaussian_mutation,
                 #    inspyred.ec.variators.nonuniform_mutation
@@ -179,7 +214,89 @@ def main(rng, onset_method=default_onset_method, buffer_size=default_buffer_size
     ea.terminator = inspyred.ec.terminators.generation_termination
 
     # --------------------------------------------------------------------------- #
+    _statfile = open(RESFOLDER+"inspyred-statistics-"+runstring+".txt","a") 
+    _indfile = open(RESFOLDER+"inspyred-individuals-"+runstring+".txt","a")
 
+                        #   Parameters for multiprocessing (Currently not working)
+                        # 
+                        #   evaluator=inspyred.ec.evaluators.parallel_evaluation_mp,
+                        #   mp_evaluator=problem.evaluator, 
+                        #   mp_num_cpus=1,
+
+                        #   Parameters for Parallel (Currently TODO: test)
+
+                        # 
+    if PARALLEL:
+        final_pop = ea.evolve(generator=problem.generator,
+                              evaluator=inspyred.ec.evaluators.parallel_evaluation_pp,
+                              pp_evaluator=problem.evaluator, 
+                              pp_dependencies=(computeLatency.perform_main_analysis,),
+                              pp_modules=("computeLatency",),
+                              pp_nprocs=12,
+                              bounder=problem.bounder,
+                              maximize=problem.maximize,
+                              pop_size=populationSize,
+                              max_generations=numberOfGenerations,
+                              #max_evaluations=numberOfEvaluations,
+                              tournament_size=tournamentSize,
+                              mutation_rate=mutationRate,
+                              gaussian_mean=gaussianMean,
+                              gaussian_stdev=gaussianStdev,
+                              crossover_rate=crossoverRate,
+                              num_selected=selectionSize,
+                              num_elites=numElites,
+                              statistics_file = _statfile,
+                              individuals_file =_indfile)
+    else:
+        final_pop = ea.evolve(generator=problem.generator,
+                              evaluator=problem.evaluator, 
+                              bounder=problem.bounder,
+                              maximize=problem.maximize,
+                              pop_size=populationSize,
+                              max_generations=numberOfGenerations,
+                              max_evaluations=numberOfEvaluations,
+                              tournament_size=tournamentSize,
+                              mutation_rate=mutationRate,
+                              gaussian_mean=gaussianMean,
+                              gaussian_stdev=gaussianStdev,
+                              crossover_rate=crossoverRate,
+                              num_selected=selectionSize,
+                              num_elites=numElites,
+                              statistics_file = _statfile,
+                              individuals_file =_indfile)
+
+    _statfile.close()
+    _indfile.close()
+
+    if display:
+        final_pop.sort(reverse=True)
+        print(final_pop[0])
+        best_onset_threshold = final_pop[0].candidate[0]
+        best_silence_threshold = final_pop[0].candidate[1]
+
+
+        info, metrics = computeLatency.perform_main_analysis(audio_directory = aubioparameters['audio_directory'],
+                                                            aubioonset_command = aubioparameters['aubioonset_command'],
+                                                            onset_method = aubioparameters['onset_method'],
+                                                            buffer_size = aubioparameters['buffer_size'],
+                                                            hop_size = aubioparameters['hop_size'],
+                                                            onset_threshold = best_onset_threshold,
+                                                            silence_threshold = best_silence_threshold,
+                                                            minimum_inter_onset_interval_s = aubioparameters['minimum_inter_onset_interval_s'],
+                                                            max_onset_difference_s = aubioparameters['max_onset_difference_s'],
+                                                            do_ignore_early_onsets = aubioparameters['do_ignore_early_onsets'],
+                                                            samplerate = aubioparameters['samplerate'],
+                                                            failsafe = aubioparameters['failsafe'])
+        res = computeLatency.create_string(info = info,
+                                           metrics = metrics,
+                                           use_oldformat=False,
+                                           do_copy = True,
+                                           failsafe = True)
+        print(res)
+
+        resfile = open(RESFOLDER+"best-"+aubioparameters['real_onset_method'] +"-"+str(aubioparameters['buffer_size'])+"res.txt","w")
+        resfile.write(res+"\n")
+        resfile.close()
 
 if __name__ == "__main__":
     if len(sys.argv) == 4 :
@@ -191,8 +308,23 @@ if __name__ == "__main__":
         print("Usage: "+sys.argv[0]+" <seed> <onset_method> <buffer_size>")
         exit()
 
-    # main(rng,onset_method=_method, buffer_size=_bufsize,display)
+    os.system("mkdir -p "+RESFOLDER)
+
+    import time
+    runstring = str(_method)+"-"+str(_bufsize)+"-"+time.strftime("%Y%m%d-%H%M%S")
+
+    import logging
+    logger = logging.getLogger('inspyred.ec')
+    logger.setLevel(logging.DEBUG)
+    file_handler = logging.FileHandler('inspyred.log', mode='w')
+    file_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    main(rng,onset_method=_method, buffer_size=_bufsize,display=display, runstring=runstring)
 
     if display:
         pylab.ioff()
-        pylab.show()
+        print(runstring)
+        pylab.savefig(RESFOLDER+runstring)
