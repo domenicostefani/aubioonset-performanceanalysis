@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+inspyred.log
 
 onsets_extracted/
 output/
