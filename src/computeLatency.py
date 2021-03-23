@@ -1,9 +1,25 @@
 #!/usr/bin/env python3
-
-## Compute the AUBIOONSET delay with different parameters
 #
-# ** This is intended to be used with different support script
-#    and placed in its original repository directory.
+#  █████  ██    ██ ██████  ██  ██████   ██████  ███    ██ ███████ ███████ ██████ 
+# ██   ██ ██    ██ ██   ██ ██ ██    ██ ██    ██ ████   ██ ██      ██        ██    
+# ███████ ██    ██ ██████  ██ ██    ██ ██    ██ ██ ██  ██ ███████ █████     ██ 
+# ██   ██ ██    ██ ██   ██ ██ ██    ██ ██    ██ ██  ██ ██      ██ ██        ██ 
+# ██   ██  ██████  ██████  ██  ██████   ██████  ██   ████ ███████ ███████   ██ 
+#
+# ███████ ██    ██  █████  ██     ██    ██  █████ ████████  ██████  ██████ 
+# ██      ██    ██ ██   ██ ██     ██    ██ ██   ██   ██    ██    ██ ██   ██ 
+# █████   ██    ██ ███████ ██     ██    ██ ███████   ██    ██    ██ ██████  
+# ██       ██  ██  ██   ██ ██     ██    ██ ██   ██   ██    ██    ██ ██   ██ 
+# ███████   ████   ██   ██ ███████ ██████  ██   ██   ██     ██████  ██   ██ 
+#
+# This script computes a numer of metrics on the performance of AubioOnset on a
+# specific set of recordings (individual sounds from acoustic guitars)
+# It can be used to manually optimize the input parameters on the dataset,
+# or it can be used in conjuction with an automatic optimizer, such as the
+# Evolutionary computation one, contained in "./evolutionaryoptimizer.py"
+#
+# ** This is intended to be used with different support scripts contained in
+#    "./utility_scripts/"
 #
 # This script does multiple things:
 # - It asks the user for the parameters for AUBIOONSET
@@ -21,15 +37,34 @@
 # Date:   10th Nov 2020
 #
 ##
-_VERBOSE = False
+_VERBOSE = False # Print info
 
 import glob             # To read folder filelist
 import os               # To call scripts
 import re               # Regexp, to parse script results
 from enum import Enum   # To specify parameter type
 import sys
-import tempfile
+import tempfile         # It allows to have univoque tmp dirs for each run
+                        # (To allow parallel execution)
 
+## Function that performs the analysis and compute all the relevant metrics
+#
+#  @param audio_directory                : Directory containing audio files
+#  @param aubioonset_command             : Exec. for aubio to use
+#  @param onset_method                   : Aubioonset method to use
+#  @param buffer_size                    : Buffer size for Aubioonset (samples)
+#  @param hop_size                       : Hop size for Aubioonset (samples)
+#  @param silence_threshold              : Threshold of silence (dB)
+#  @param onset_threshold                : Dyn. Onset threshold
+#  @param minimum_inter_onset_interval_s : Onset "debounce" in seconds
+#  @param max_onset_difference_s         : Acceptation window for detected onset
+#  @param do_ignore_early_onsets         : Ignore onsets detected before label
+#  @param samplerate                     : Audio Sample rate
+#  @param failsafe                       : Avoid raising errors if True
+#  @param save_results                   : Keep record of results in a file
+#
+#  @return It returns a dict with parameters and one with metrics
+#
 def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer_size,hop_size,silence_threshold,onset_threshold,minimum_inter_onset_interval_s,max_onset_difference_s=0.02,do_ignore_early_onsets=True,samplerate=48000, failsafe=True,save_results=True):
     with tempfile.TemporaryDirectory(prefix="aubioonsetanalysis-") as TEMP_FOLDER:
         TEMP_FOLDER=TEMP_FOLDER+"/"
@@ -59,7 +94,7 @@ def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer
 
         # Parse script output, looking for the AUBIOONSET delay (in samples)
         '''
-            AubioOnset computes the onset time by subtracting a fixed time
+            Aubioonset computes the onset time by subtracting a fixed time
             period to the detection time.
             We are interested in the detection time, so we add to the reported
             time, the delay parameter used.
@@ -208,7 +243,7 @@ def perform_main_analysis(audio_directory,aubioonset_command,onset_method,buffer
                 }
             }
             return relevant_info, relevant_metrics
-        
+
         # If failsafe is True, the function avoids raising an error
         if failsafe:
             try:
@@ -276,7 +311,7 @@ def create_string(info,metrics,use_oldformat=False,do_copy = False,failsafe = Tr
         output_string += "{:.4f}".format(metrics["mavg_t_hifence"])+"\t"
         output_string += "{:.4f}".format(metrics["mavg_t_percIn"])+"\t"
 
-        output_string += " \t"+info["results_filename"]        
+        output_string += " \t"+info["results_filename"]
     if do_copy:
         import pyperclip
         pyperclip.copy(output_string)
